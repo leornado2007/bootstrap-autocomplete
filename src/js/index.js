@@ -46,7 +46,7 @@ $(function () {
   };
 
   // ac1
-  $('#ac1').on($.extend({}, getListeners('ac1', 'value1'))).bsAutocomplete({
+  $('#ac1').on($.extend({}, getListeners('ac1', 'value1'))).bsAutoComplete({
     minChar: 3, filtSame: true, forceSelect: true,
     loadData: emailLoader, loadDataItems: emailItemsLoader,
     getText4BadgeEdit: function (item, text) {
@@ -60,7 +60,7 @@ $(function () {
   });
 
   // ac2
-  $('#ac2').on($.extend({}, getListeners('ac2', 'value2'))).bsAutocomplete({
+  $('#ac2').on($.extend({}, getListeners('ac2', 'value2'))).bsAutoComplete({
     forceSelect: true, value: ['snow_white@gmail.com', 'Zwerge_1@gmail.com'],
     loadData: emailLoader, loadDataItems: emailItemsLoader,
     getText4BadgeEdit: function (item, text) {
@@ -77,7 +77,7 @@ $(function () {
   // ac3
   var data = [];
   for (var i = 0; i < 100; i++) data.push({code: 'code-' + i, name: '项目-' + i})
-  $('#ac3').on($.extend({}, getListeners('ac3', 'value3'))).bsAutocomplete({
+  $('#ac3').on($.extend({}, getListeners('ac3', 'value3'))).bsAutoComplete({
     minChar: 0, data: data
   });
 
@@ -87,12 +87,12 @@ $(function () {
   });
 
   // ac4
-  $('#ac4').on($.extend({}, getListeners('ac4', 'value4'))).bsAutocomplete({
+  $('#ac4').on($.extend({}, getListeners('ac4', 'value4'))).bsAutoComplete({
     minChar: 0, data: data, multiple: false
   });
 
   // ac5
-  $('#ac5').on($.extend({}, getListeners('ac5', 'value5'))).bsAutocomplete({
+  $('#ac5').on($.extend({}, getListeners('ac5', 'value5'))).bsAutoComplete({
     data: data.concat([{c: 'add value', n: '添加的项目'}, {c: 'set value', n: '设置的项目'}, 'hello world']),
     multiple: false, value: 'hello world', forceSelect: true
   });

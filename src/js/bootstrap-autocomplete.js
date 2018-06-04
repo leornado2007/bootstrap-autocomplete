@@ -951,7 +951,7 @@
     $(window).on('resize', htmlResizeHandler);
   };
 
-  $.fn.bsAutocomplete = function (params) {
+  $.fn.bsAutoComplete = function (params) {
     var args = arguments;
     return this.each(function () {
       if (!this) return;
