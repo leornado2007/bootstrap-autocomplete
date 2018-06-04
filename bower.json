@@ -1,0 +1,32 @@
+{
+  "name": "bootstrap-autocomplete",
+  "description": "bootstrap jquery autocomplete",
+  "main": "dist/js/bootstrap-autocomplete.js",
+  "authors": [
+    "leornado <leornado@126.com>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "bootstrap",
+    "jquery",
+    "autocomplete"
+  ],
+  "homepage": "https://github.com/leornado2007/bootstrap-autocomplete.git",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~1.11.1",
+    "jquery-migrate": "~1.2.1",
+    "bootstrap": "3.3.7",
+    "html5shiv": "3.7.3",
+    "respond": "1.4.2"
+  },
+  "devDependencies": {
+    "gulp": "^4.0.0"
+  }
+}

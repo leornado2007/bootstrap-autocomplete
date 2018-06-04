@@ -1,0 +1,236 @@
+$color-red-error: rgb(185, 74, 72);
+$color-grey-arrow: rgba(204, 204, 204, 0.2);
+$width-default: 220px;
+$zindex-select-dropdown: 1060;
+$input-color-placeholder: #999;
+$primary-color: #337ab7;
+$info-color: #5bc0de;
+$danger-color: #d9534f;
+$default-label-color: #777;
+
+.cursor-disabled {
+  cursor: not-allowed;
+}
+
+.bootstrap-autocomplete {
+  width: $width-default;
+  cursor: text;
+  padding: 6px 28px 0 12px;
+  height: auto;
+  overflow: visible;
+
+  .bsautocomplete-icon-cross {
+    visibility: hidden;
+    opacity: 0.4;
+    margin-top: -1px;
+    right: 12px;
+    position: absolute;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  &.focus {
+    border-color: #66afe9;
+    outline: 0;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+  }
+
+  &.selected {
+    .bsautocomplete-icon-cross {
+      visibility: visible;
+    }
+  }
+
+  &.readonly {
+    cursor: no-drop;
+
+    &.selected {
+      .bsautocomplete-icon-cross {
+        visibility: hidden;
+      }
+    }
+
+    .bs-autocomplete-badge.label {
+      background-color: $default-label-color;
+      border-top-right-radius: .25em;
+      border-bottom-right-radius: .25em;
+
+      .badge-text:hover, .badge-close:hover {
+        background-color: $default-label-color;
+      }
+
+      .badge-close {
+        display: none;
+      }
+    }
+
+    .input-delegate {
+      cursor: no-drop;
+    }
+  }
+
+  &.single-badge {
+    .bs-autocomplete-badge {
+      display: none;
+    }
+  }
+
+  .bs-autocomplete-placeholder {
+    color: $input-color-placeholder;
+    float: left;
+  }
+
+  .bs-autocomplete-badge {
+    float: left;
+    margin: 0 8px 6px 0;
+
+    &.label {
+      padding: 0;
+      border-color: $primary-color;
+
+      a, a:hover, a:focus, a:visited {
+        padding: 4px .6em 4px;
+        color: #fff;
+        text-decoration: none;
+        display: inline-block;
+        float: left;
+      }
+
+      .badge-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &:hover {
+          background-color: $info-color;
+          border-top-left-radius: .25em;
+          border-bottom-left-radius: .25em;
+        }
+      }
+
+      .badge-close {
+        border-left: 1px solid $input-color-placeholder;
+
+        &:hover {
+          background-color: $danger-color;
+          border-top-right-radius: .25em;
+          border-bottom-right-radius: .25em;
+        }
+      }
+    }
+  }
+
+  .delegate-input {
+    overflow: hidden;
+    background: transparent;
+    border-color: transparent;
+    float: left;
+    white-space: nowrap;
+    padding: 2px 9px;
+    position: relative;
+    max-width: 100%;
+    font-size: 14px;
+    line-height: 1.42857143;
+    height: 20px;
+    margin-bottom: 6px;
+
+    .input-delegate {
+      width: 100%;
+      margin: 0;
+      display: inline;
+      padding: 0;
+      border: 0;
+      outline: none;
+      background: transparent;
+      position: absolute;
+      left: 2px;
+      height: 16px;
+    }
+
+    .input-delegate-sizer {
+      visibility: hidden;
+      white-space: nowrap;
+      display: inline;
+    }
+  }
+
+  > .dropdown-menu {
+    min-width: unset;
+    max-width: 120px;
+    height: 180px;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    li {
+      &.selected a {
+        background: $primary-color;
+        color: #fff;
+      }
+
+      a {
+        .text {
+          width: 100%;
+          display: inline-block;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          line-height: 1;
+        }
+      }
+    }
+  }
+
+  &:not([class*="form-control"]) {
+    width: $width-default;
+  }
+
+  &.form-control {
+    &.fit-width {
+      width: 100%;
+    }
+
+    &.input-group-btn {
+      z-index: auto;
+
+      &:not(:first-child):not(:last-child) {
+        > .btn {
+          border-radius: 0;
+        }
+      }
+    }
+  }
+
+}
+
+@keyframes bsAutoCompleteLoadingCircle {
+  0% {
+    transform-origin: 50% 50%;
+    transform: rotate(0deg)
+  }
+
+  100% {
+    transform-origin: 50% 50%;
+    transform: rotate(360deg)
+  }
+}
+
+::-webkit-scrollbar-track-piece {
+  background-color: #fff;
+  -webkit-border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  height: 30px;
+  background-color: #999;
+  -webkit-border-radius: 7px;
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+  border: 2px solid #fff;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 10px;
+}
