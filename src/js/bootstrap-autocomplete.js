@@ -301,7 +301,7 @@
         input.isFocused = false;
         ac.el.removeClass('focus');
 
-        if (inputEl.val() && !input.beforeMoveVal || !inputEl.val() && ac.isSingleMode()) input.confirmValue();
+        if (inputEl.val() && !input.beforeMoveVal || !inputEl.val() && ac.isSingleMode()) input.confirmValue(false, true);
         ac.placeholder.refresh();
         ac.close();
         ac.fireOnBlur();
@@ -434,7 +434,7 @@
     };
 
     // confirmValue
-    input.confirmValue = function (isEsc) {
+    input.confirmValue = function (isEsc, fromBlur) {
       var added;
 
       if (isEsc) {
@@ -446,6 +446,7 @@
           if (ac.selectedItems.length > 0) ac.removeSelected(ac.selectedItems[0]);
           if (inputEl.val()) input.clear();
         }
+        if (!fromBlur) inputEl.blur();
         ac.close();
       } else if (inputEl.val()) input.clear();
     };
