@@ -80,7 +80,11 @@ $default-label-color: #777;
 
   .bs-autocomplete-placeholder {
     color: $input-color-placeholder;
-    float: left;
+    position: absolute;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .bs-autocomplete-badge {

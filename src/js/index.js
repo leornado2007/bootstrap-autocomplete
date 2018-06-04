@@ -32,7 +32,7 @@ $(function () {
       $('#' + valueId).text(JSON.stringify(value));
     };
   };
-  var onselect = onclear = ondeselect = onfocus = onblur = function (eventType, bsId) {
+  var onselect = onclear = ondeselect = onFocus = onBlur = function (eventType, bsId) {
     return function () {
       console.log('====' + eventType + '====', bsId)
     }
@@ -41,14 +41,15 @@ $(function () {
     return {
       'bs.autocomplete.change': onchange(valueId), 'bs.autocomplete.init': oninit(bsId, valueId),
       'bs.autocomplete.select': onselect('onselect', bsId), 'bs.autocomplete.deselect': ondeselect('deselect', bsId),
-      'bs.autocomplete.clear': onclear('onclear', bsId), 'bs.autocomplete.focus': onfocus('focus', bsId),
-      'bs.autocomplete.blur': onblur('blur', bsId)
+      'bs.autocomplete.clear': onclear('onclear', bsId), 'bs.autocomplete.focus': onFocus('focus', bsId),
+      'bs.autocomplete.blur': onBlur('blur', bsId)
     }
   };
 
   // ac1
   $('#ac1').on($.extend({}, getListeners('ac1', 'value1'))).bsAutoComplete({
     minChar: 3, filtSame: true, forceSelect: true,
+    placeHolder: '请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择',
     loadData: emailLoader, loadDataItems: emailItemsLoader,
     getText4BadgeEdit: function (item, text) {
       return text.indexOf('@') >= 0 ? text.substring(0, text.indexOf('@')) : text

@@ -721,13 +721,13 @@
     };
 
     // fireOnFocus
-    ac.fireOnFocus = function (item, items) {
-      ac.params.el.trigger('bs.autocomplete.focus', [item, items]);
+    ac.fireOnFocus = function () {
+      ac.params.el.trigger('bs.autocomplete.focus');
     };
 
     // fireOnBlur
-    ac.fireOnBlur = function (item, items) {
-      ac.params.el.trigger('bs.autocomplete.blur', [item, items]);
+    ac.fireOnBlur = function () {
+      ac.params.el.trigger('bs.autocomplete.blur');
     };
 
     // fireOnDeSelect
