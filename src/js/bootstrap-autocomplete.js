@@ -36,9 +36,6 @@
     dropdownItemTpl: '<li>\
         <a href="javascript:">\
           <span class="text"></span>\
-          <span class="bsfont icon-ico-right-arrow item-right-arrow"></span>\
-          <span class="bsfont icon-loading item-loading"></span>\
-          <span class="bsfont icon-error"></span>\
         </a>\
       </li>',
     badgeTpl: ' <span class="label label-primary">\
