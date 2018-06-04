@@ -301,7 +301,8 @@
         input.isFocused = false;
         ac.el.removeClass('focus');
 
-        if (inputEl.val() && !input.beforeMoveVal || !inputEl.val() && ac.isSingleMode()) input.confirmValue(false, true);
+        if (inputEl.val() && !input.beforeMoveVal && !ac.isSingleMode() || !inputEl.val() && ac.isSingleMode())
+          input.confirmValue(false, true);
         ac.placeholder.refresh();
         ac.close();
         ac.fireOnBlur();

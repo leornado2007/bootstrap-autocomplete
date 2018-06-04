@@ -21,7 +21,7 @@ $(function () {
   };
   var onchange = function (valueId) {
     return function (e, oldValue, newValue) {
-      console.log('=====onchange======', valueId);
+      console.log('=====onchange======', valueId, newValue);
       $('#' + valueId).text(JSON.stringify(newValue));
     };
   };
