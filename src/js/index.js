@@ -32,7 +32,7 @@ $(function () {
       $('#' + valueId).text(JSON.stringify(value));
     };
   };
-  var onselect = onclear = ondeselect = function (eventType, bsId) {
+  var onselect = onclear = ondeselect = onfocus = onblur = function (eventType, bsId) {
     return function () {
       console.log('====' + eventType + '====', bsId)
     }
@@ -41,7 +41,8 @@ $(function () {
     return {
       'bs.autocomplete.change': onchange(valueId), 'bs.autocomplete.init': oninit(bsId, valueId),
       'bs.autocomplete.select': onselect('onselect', bsId), 'bs.autocomplete.deselect': ondeselect('deselect', bsId),
-      'bs.autocomplete.clear': onclear('onclear', bsId)
+      'bs.autocomplete.clear': onclear('onclear', bsId), 'bs.autocomplete.focus': onfocus('focus', bsId),
+      'bs.autocomplete.blur': onblur('blur', bsId)
     }
   };
 

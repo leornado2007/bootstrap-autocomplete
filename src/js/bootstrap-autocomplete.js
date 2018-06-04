@@ -295,6 +295,7 @@
           setCaretPosition(inputEl[0]);
           ac.editingItem = {item: ac.getValue()[0], text: inputEl.val()};
         }
+        ac.fireOnFocus();
       },
       'blur': function () {
         input.isFocused = false;
@@ -303,6 +304,7 @@
         if (inputEl.val() && !input.beforeMoveVal || !inputEl.val() && ac.isSingleMode()) input.confirmValue();
         ac.placeholder.refresh();
         ac.close();
+        ac.fireOnBlur();
       },
       'keydown': function (e) {
         if (ac.isReadonly()) return;
@@ -442,10 +444,10 @@
       if (ac.isSingleMode()) {
         if (!added) {
           if (ac.selectedItems.length > 0) ac.removeSelected(ac.selectedItems[0]);
-          if(inputEl.val()) input.clear();
+          if (inputEl.val()) input.clear();
         }
         ac.close();
-      } else if(inputEl.val()) input.clear();
+      } else if (inputEl.val()) input.clear();
     };
 
     // blur
@@ -456,7 +458,9 @@
 
     // clear
     input.clear = function (fireBlur) {
-      inputEl.val('').blur();
+      inputEl.val('');
+      if (fireBlur === false) ac.placeholder.refresh();
+      else inputEl.blur();
       inputSizer.text('W');
     };
 
@@ -716,6 +720,16 @@
       ac.params.el.trigger('bs.autocomplete.init');
     };
 
+    // fireOnFocus
+    ac.fireOnFocus = function (item, items) {
+      ac.params.el.trigger('bs.autocomplete.focus', [item, items]);
+    };
+
+    // fireOnBlur
+    ac.fireOnBlur = function (item, items) {
+      ac.params.el.trigger('bs.autocomplete.blur', [item, items]);
+    };
+
     // fireOnDeSelect
     ac.fireOnDeSelect = function (item, items) {
       ac.params.el.trigger('bs.autocomplete.deselect', [item, items]);
@@ -748,7 +762,7 @@
     // clearValue
     ac.clearValue = function (fire) {
       if (ac.isReadonly()) return;
-      if (ac.isSingleMode()) ac.input.clear();
+      if (ac.isSingleMode()) ac.input.clear(fire);
 
       var oldSelectedItems = ac.getValue();
       ac.selectedItems.splice(0, ac.selectedItems.length);
@@ -783,8 +797,10 @@
       ac.selectedItems.push(item);
       if (ac.selectedItems.length > 0) ac.el.addClass('selected');
 
-      if (fire !== false) ac.fireOnSelect(item, ac.getValue());
-      if (fire !== false) ac.fireOnChange(oldSelectedItems, ac.getValue());
+      if (fire !== false) {
+        ac.fireOnSelect(item, ac.getValue());
+        ac.fireOnChange(oldSelectedItems, ac.getValue());
+      }
     };
 
     // removeSelected
@@ -929,14 +945,13 @@
         if (e.target == ac.el[0]) {
           var badge = ac.badge.getCloestBadge(e.offsetX, e.offsetY);
           ac.input.moveToBadge(badge);
-          ac.input.focus(badge);
+          if (ac.input.isFocused) stopEvent(e);
+          //ac.input.focus();
         }
       },
       click: function (e) {
         if (ac.isReadonly()) return;
-
-        var badge = ac.badge.getCloestBadge(e.offsetX, e.offsetY);
-        ac.input.focus(badge);
+        ac.input.focus();
       }
     });
 
