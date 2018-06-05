@@ -507,7 +507,7 @@
         if (items.size() > 0) moveToItem = isUp ? $(items[items.size() - 1]) : $(items[0]);
       }
 
-      if (moveToItem.length > 0) {
+      if (moveToItem && moveToItem.length > 0) {
         selItem.removeClass('selected');
         moveToItem.addClass('selected');
         panel.scrollToSelected(moveToItem);
