@@ -711,11 +711,6 @@
       ac.el.remove();
     };
 
-    // selectItem
-    ac.selectItem = function (itemEl) {
-      // TODO
-    };
-
     // fireOnChange
     ac.fireOnChange = function (oldItems, newItems) {
       ac.params.el.trigger('bs.autocomplete.change', [oldItems, newItems]);
@@ -768,6 +763,11 @@
     // getValue
     ac.getValue = function () {
       return ac.selectedItems.slice();
+    };
+
+    // clearData
+    ac.clearData = function () {
+      ac.data.splice(0, ac.data.length);
     };
 
     // clearValue
