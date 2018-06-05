@@ -298,6 +298,7 @@
         ac.fireOnFocus();
       },
       'blur': function () {
+        if (!input.isFocused) return;
         input.isFocused = false;
         ac.el.removeClass('focus');
 
@@ -315,6 +316,12 @@
         var specialKey = false;
         switch (e.keyCode) {
           case KEY_CODES.ENTER:
+            var item = ac.panel.getSelectedItem();
+            if (item) {
+              var itemName = item.n || item.name, itemCode = item.c || item.code;
+              if (ac.isInSearchMode('name') && itemName) inputEl.val(itemName);
+              else if (itemCode) inputEl.val(itemCode);
+            }
             input.blur();
             stopEvent(e);
             specialKey = true;
