@@ -301,7 +301,7 @@
         input.isFocused = false;
         ac.el.removeClass('focus');
 
-        if (inputEl.val() && !input.beforeMoveVal && !ac.isSingleMode() || !inputEl.val() && ac.isSingleMode())
+        if (inputEl.val() && !input.beforeMoveVal || !inputEl.val() && ac.isSingleMode())
           input.confirmValue(false, true);
         ac.placeholder.refresh();
         ac.close();
@@ -315,7 +315,7 @@
         var specialKey = false;
         switch (e.keyCode) {
           case KEY_CODES.ENTER:
-            input.confirmValue();
+            input.blur();
             stopEvent(e);
             specialKey = true;
             break;
