@@ -255,7 +255,9 @@
       var doAdd = false;
       if (ac.params.filtSame && ac.selectedItems.length > 0) {
         var hasSame = ac.findSelectedItem(item) >= 0;
-        if (!hasSame) doAdd = true;
+        if (hasSame) {
+          if (ac.isSingleMode()) return true;
+        } else doAdd = true;
       } else doAdd = true;
 
       if (doAdd) {
