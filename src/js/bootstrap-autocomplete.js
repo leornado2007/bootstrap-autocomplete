@@ -702,6 +702,11 @@
       return ac.params.searchMode.indexOf(mode) >= 0;
     };
 
+    // resize
+    ac.resize = function () {
+      ac.badge.resize();
+    };
+
     // destroy
     ac.destroy = function () {
       ac.panel.destroy();
