@@ -38,7 +38,7 @@
           <span class="text"></span>\
         </a>\
       </li>',
-    badgeTpl: ' <span class="label label-primary">\
+    badgeTpl: '<span class="label label-primary">\
         <a href="javascript:" class="badge-text"></a>\
         <a href="javascript:" class="badge-close">x</a>\
       </span>'
@@ -981,13 +981,13 @@
       var $this = $(this);
 
       var bsAutoComplete = $this.data("bsAutoComplete");
-      if (!bsAutoComplete) {
+      if (!bsAutoComplete && params != 'destroy') {
         params = $.extend({
           el: $this, value: $this.val() ? $this.val().split(params.splitChar || ' ') : ''
         }, params);
         bsAutoComplete = new AutoComplete(params, $this);
       }
-      if (isString(params))
+      if (bsAutoComplete && isString(params))
         bsAutoComplete[params].apply(bsAutoComplete, Array.prototype.slice.call(args, 1));
     });
   }
