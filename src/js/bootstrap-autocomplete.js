@@ -607,6 +607,15 @@
     for (var def in DEF_OPTS) if (typeof params[def] === 'undefined') params[def] = DEF_OPTS[def];
     ac.params = params, ac.initialized = false, ac.selectedItems = [], ac.readonly = false;
 
+    // htmlOverHandler
+    var htmlOverHandler = function () {
+      if (!ac.resized4htmlOver) {
+        if (ac.el.is(':visible')) ac.resize();
+        $('html').off('mouseover', htmlOverHandler);
+        ac.resized4htmlOver = true;
+      }
+    };
+
     // htmlClickHandler
     var htmlClickHandler = function (e) {
       if (!ac.el.hasClass('open')) return;
@@ -624,6 +633,15 @@
       setTimeout(function () {
         ac.panel.resize();
       }, 100);
+    };
+
+    // elOverHandler
+    var elOverHandler = function () {
+      if (!ac.resized4elOver) {
+        if (ac.el.is(':visible')) ac.resize();
+        ac.el.off('mouseover', elOverHandler);
+        ac.resized4elOver = true;
+      }
     };
 
     // addValue
@@ -710,7 +728,7 @@
     // destroy
     ac.destroy = function () {
       ac.panel.destroy();
-      $('html').off('click', htmlClickHandler);
+      $('html').off({'click': htmlClickHandler, 'mouseover': htmlOverHandler});
       $(window).off('resize', htmlResizeHandler);
       ac.params.el.removeData("bsAutoComplete");
       ac.el.remove();
@@ -968,14 +986,15 @@
       click: function (e) {
         if (ac.isReadonly()) return;
         ac.input.focus();
-      }
+      },
+      mouseover: elOverHandler
     });
 
     originEl.data("bsAutoComplete", this);
     if (ac.params.value) ac.setValue(ac.params.value, true);
     else ac.fireOnInit();
 
-    $('html').on('click', htmlClickHandler);
+    $('html').on({'click': htmlClickHandler, 'mouseover': htmlOverHandler});
     $(window).on('resize', htmlResizeHandler);
   };
 

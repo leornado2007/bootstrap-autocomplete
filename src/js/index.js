@@ -65,7 +65,6 @@ $(function () {
   $('#ac2').hide().on($.extend(getListeners('ac2', 'value2'), {
     'bs.autocomplete.init': function () {
       $('#ac2').show();
-      console.log('=======');
     }
   })).bsAutoComplete({
     forceSelect: true, value: ['snow_white@gmail.com', 'Zwerge_1@gmail.com'],
