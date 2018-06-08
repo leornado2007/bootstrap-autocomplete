@@ -37,6 +37,13 @@ $(function () {
       console.log('====' + eventType + '====', bsId)
     }
   };
+  var onSetAddValueSuccess = function (eventType, bsId) {
+    return {
+      onSuccess: function () {
+        console.log('====' + eventType + '====', bsId)
+      }
+    }
+  };
   var getListeners = function (bsId, valueId) {
     return {
       'bs.autocomplete.change': onchange(valueId), 'bs.autocomplete.init': oninit(bsId, valueId),
@@ -58,7 +65,7 @@ $(function () {
 
   $('#ac1Btn').click(function () {
     var ac1 = $('#ac1').data('bsAutoComplete');
-    ac1.setValue(['snow_white@gmail.com', 'hua_mu_lan@sina.com', 'cinderella@hotmail.com']);
+    ac1.setValue(['snow_white@gmail.com', 'hua_mu_lan@sina.com', 'cinderella@hotmail.com'], onSetAddValueSuccess('setValue', 'ac3'));
   });
 
   // ac2
@@ -77,7 +84,8 @@ $(function () {
   var ZwergeIndex = 1;
   $('#ac2Btn').click(function () {
     var ac2 = $('#ac2').data('bsAutoComplete');
-    ac2.addValue(['Zwerge_' + (ZwergeIndex++ % 7 + 1) + '@gmail.com', 'Zwerge_' + (ZwergeIndex++ % 7 + 1) + '@gmail.com']);
+    ac2.addValue(['Zwerge_' + (ZwergeIndex++ % 7 + 1) + '@gmail.com', 'Zwerge_' + (ZwergeIndex++ % 7 + 1) + '@gmail.com'],
+        onSetAddValueSuccess('addValue', 'ac3'));
   });
   $('#ac2ResizeBtn').click(function () {
     var ac2 = $('#ac2').data('bsAutoComplete');
@@ -95,6 +103,10 @@ $(function () {
     var ac3 = $('#ac3').data('bsAutoComplete');
     ac3.setReadonly(!ac3.isReadonly());
   });
+  $('#ac3AddBtn').click(function () {
+    var ac3 = $('#ac3').data('bsAutoComplete');
+    ac3.addValue([{c: 'code-12', n: '项目-12'}], onSetAddValueSuccess('addValue', 'ac3'));
+  });
 
   // ac4
   $('#ac4').on($.extend(getListeners('ac4', 'value4'), {})).bsAutoComplete({
@@ -109,11 +121,11 @@ $(function () {
 
   $('#ac5AddBtn').click(function () {
     var ac5 = $('#ac5').data('bsAutoComplete');
-    ac5.addValue([{c: 'add value', n: '添加的项目'}]);
+    ac5.addValue([{c: 'add value', n: '添加的项目'}], onSetAddValueSuccess('addValue', 'ac3'));
   });
   $('#ac5SetBtn').click(function () {
     var ac5 = $('#ac5').data('bsAutoComplete');
-    ac5.addValue([{c: 'set value', n: '设置的项目'}]);
+    ac5.setValue([{c: 'set value', n: '设置的项目'}], onSetAddValueSuccess('setValue', 'ac3'));
   });
 
 });

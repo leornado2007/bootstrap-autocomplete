@@ -645,11 +645,13 @@
     };
 
     // addValue
-    ac.addValue = function (items, clear, fireInit) {
+    ac.addValue = function (items, opts) {
+      opts = $.extend({onSuccess: $.noop}, opts || {});
+
       var oldSelectedItems = ac.getValue();
-      if (clear) ac.clearValue(false);
+      if (opts.clear) ac.clearValue(false);
       if (!items) {
-        fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
+        opts.fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
         return;
       }
 
@@ -672,9 +674,10 @@
           $.each(items, function (i, item) {
             ac.badge.add(item, tmpData);
           });
-          fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
+          opts.fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
+          opts.onSuccess.call(ac);
         }, function () {
-          if (fireInit) ac.fireOnInit();
+          if (opts.fireInit) ac.fireOnInit();
         });
       } else {
         var lastSearchData = ac.data, needCheckRemote = ac.params.forceSelect && ac.params.loadData;
@@ -684,6 +687,7 @@
           if (needCheckRemote) {
             if (ac.searchInData(item, lastSearchData)) {
               ac.badge.add(item);
+              checkedItemCount++;
             } else {
               var itemCode = item.c || item.code, itemName = item.n || item.name;
               var searchText = ac.isInSearchMode('code') ? itemCode : itemName, tmpData = [];
@@ -691,20 +695,25 @@
                 lastSearchData = tmpData;
                 ac.badge.add(item, tmpData);
               }).always(function () {
-                if (++checkedItemCount == toCheckCount)
-                  fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
+                if (++checkedItemCount == toCheckCount) {
+                  opts.fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
+                  opts.onSuccess.call(ac);
+                }
               });
             }
           } else ac.badge.add(item);
         });
-        if (!needCheckRemote)
-          fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
+        if (!needCheckRemote) {
+          opts.fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
+          opts.onSuccess.call(ac);
+        }
       }
     };
 
     // setValue
-    ac.setValue = function (items, fireInit) {
-      ac.addValue(items, true, fireInit);
+    ac.setValue = function (items, opts) {
+      opts = $.extend(opts || {}, {clear: true});
+      ac.addValue(items, opts);
     };
 
     // openOnFocus
@@ -990,7 +999,7 @@
     });
 
     originEl.data("bsAutoComplete", this);
-    if (ac.params.value) ac.setValue(ac.params.value, true);
+    if (ac.params.value) ac.setValue(ac.params.value, {fireInit: true});
     else ac.fireOnInit();
 
     $('html').on({'click': htmlClickHandler, 'mouseover': htmlOverHandler});
