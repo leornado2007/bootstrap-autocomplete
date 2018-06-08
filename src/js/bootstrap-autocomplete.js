@@ -795,7 +795,6 @@
 
     // clearValue
     ac.clearValue = function (fire) {
-      if (ac.isReadonly()) return;
       if (ac.isSingleMode()) ac.input.clear(fire);
 
       var oldSelectedItems = ac.getValue();
