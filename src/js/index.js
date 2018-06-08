@@ -46,7 +46,7 @@ $(function () {
   };
   var getListeners = function (bsId, valueId) {
     return {
-      'bs.autocomplete.change': onchange(valueId), 'bs.autocomplete.init': oninit(bsId, valueId),
+      'bs.autocomplete.change': onchange(valueId), 'bs.autocomplete.inited': oninit(bsId, valueId),
       'bs.autocomplete.select': onselect('onselect', bsId), 'bs.autocomplete.deselect': ondeselect('deselect', bsId),
       'bs.autocomplete.clear': onclear('onclear', bsId), 'bs.autocomplete.focus': onFocus('focus', bsId),
       'bs.autocomplete.blur': onBlur('blur', bsId)
@@ -70,7 +70,7 @@ $(function () {
 
   // ac2
   $('#ac2').hide().on($.extend(getListeners('ac2', 'value2'), {
-    'bs.autocomplete.init': function () {
+    'bs.autocomplete.inited': function () {
       $('#ac2').show();
     }
   })).bsAutoComplete({

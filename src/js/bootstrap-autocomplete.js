@@ -755,7 +755,7 @@
 
     // fireOnInit
     ac.fireOnInit = function () {
-      ac.params.el.trigger('bs.autocomplete.init');
+      ac.params.el.trigger('bs.autocomplete.inited');
     };
 
     // fireOnFocus
