@@ -37,9 +37,9 @@ $(function () {
       console.log('====' + eventType + '====', bsId)
     }
   };
-  var onSetAddValueSuccess = function (eventType, bsId) {
+  var onSetFinish = function (eventType, bsId) {
     return {
-      onSuccess: function () {
+      onSetFinish: function () {
         console.log('====' + eventType + '====', bsId)
       }
     }
@@ -65,7 +65,7 @@ $(function () {
 
   $('#ac1Btn').click(function () {
     var ac1 = $('#ac1').data('bsAutoComplete');
-    ac1.setValue(['snow_white@gmail.com', 'hua_mu_lan@sina.com', 'cinderella@hotmail.com'], onSetAddValueSuccess('setValue', 'ac3'));
+    ac1.setValue(['snow_white@gmail.com', 'hua_mu_lan@sina.com', 'cinderella@hotmail.com'], onSetFinish('setValue', 'ac3'));
   });
 
   // ac2
@@ -85,7 +85,7 @@ $(function () {
   $('#ac2Btn').click(function () {
     var ac2 = $('#ac2').data('bsAutoComplete');
     ac2.addValue(['Zwerge_' + (ZwergeIndex++ % 7 + 1) + '@gmail.com', 'Zwerge_' + (ZwergeIndex++ % 7 + 1) + '@gmail.com'],
-        onSetAddValueSuccess('addValue', 'ac3'));
+        onSetFinish('addValue', 'ac3'));
   });
   $('#ac2ResizeBtn').click(function () {
     var ac2 = $('#ac2').data('bsAutoComplete');
@@ -105,7 +105,7 @@ $(function () {
   });
   $('#ac3AddBtn').click(function () {
     var ac3 = $('#ac3').data('bsAutoComplete');
-    ac3.addValue([{c: 'code-12', n: '项目-12'}], onSetAddValueSuccess('addValue', 'ac3'));
+    ac3.addValue([{c: 'code-12', n: '项目-12'}], onSetFinish('addValue', 'ac3'));
   });
 
   // ac4
@@ -121,11 +121,11 @@ $(function () {
 
   $('#ac5AddBtn').click(function () {
     var ac5 = $('#ac5').data('bsAutoComplete');
-    ac5.addValue([{c: 'add value', n: '添加的项目'}], onSetAddValueSuccess('addValue', 'ac3'));
+    ac5.addValue([{c: 'add value', n: '添加的项目'}], onSetFinish('addValue', 'ac3'));
   });
   $('#ac5SetBtn').click(function () {
     var ac5 = $('#ac5').data('bsAutoComplete');
-    ac5.setValue([{c: 'set value', n: '设置的项目'}], onSetAddValueSuccess('setValue', 'ac3'));
+    ac5.setValue([{c: 'set value', n: '设置的项目'}], onSetFinish('setValue', 'ac3'));
   });
 
 });

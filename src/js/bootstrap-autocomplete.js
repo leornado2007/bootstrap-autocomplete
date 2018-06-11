@@ -646,7 +646,7 @@
 
     // addValue
     ac.addValue = function (items, opts) {
-      opts = $.extend({onSuccess: $.noop}, opts || {});
+      opts = $.extend({onSetFinish: $.noop}, opts || {});
 
       var oldSelectedItems = ac.getValue();
       if (opts.clear) ac.clearValue(false);
@@ -674,10 +674,9 @@
           $.each(items, function (i, item) {
             ac.badge.add(item, tmpData);
           });
+        }).always(function () {
           opts.fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
-          opts.onSuccess.call(ac);
-        }, function () {
-          if (opts.fireInit) ac.fireOnInit();
+          opts.onSetFinish.call(ac);
         });
       } else {
         var lastSearchData = ac.data, needCheckRemote = ac.params.forceSelect && ac.params.loadData;
@@ -697,7 +696,7 @@
               }).always(function () {
                 if (++checkedItemCount == toCheckCount) {
                   opts.fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
-                  opts.onSuccess.call(ac);
+                  opts.onSetFinish.call(ac);
                 }
               });
             }
@@ -705,7 +704,7 @@
         });
         if (!needCheckRemote) {
           opts.fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
-          opts.onSuccess.call(ac);
+          opts.onSetFinish.call(ac);
         }
       }
     };
@@ -745,7 +744,20 @@
 
     // fireOnChange
     ac.fireOnChange = function (oldItems, newItems) {
-      ac.params.el.trigger('bs.autocomplete.change', [oldItems, newItems]);
+      var fire = true;
+      if (oldItems != newItems && oldItems.length == newItems.length) {
+        var allItemsSame = true;
+        $.each(oldItems, function (i, oldItem) {
+          var oldItemCode = oldItem.code || oldItem.c, oldItemName = oldItem.name || oldItem.n;
+          var newItem = newItems[i], newItemCode = newItem.code || newItem.c, newItemName = newItem.name || newItem.n;
+          if (oldItemCode != newItemCode || oldItemName != newItemName) {
+            allItemsSame = false;
+            return false;
+          }
+        });
+        if (allItemsSame) fire = false;
+      }
+      if (fire) ac.params.el.trigger('bs.autocomplete.change', [oldItems, newItems]);
     };
 
     // fireOnSelect
