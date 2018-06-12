@@ -648,10 +648,11 @@
     ac.addValue = function (items, opts) {
       opts = $.extend({onSetFinish: $.noop}, opts || {});
 
-      var oldSelectedItems = ac.getValue();
+      var oldSelectedItems = ac.getValue(), changeFired;
       if (opts.clear) ac.clearValue(false);
       if (!items) {
-        opts.fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
+        opts.fireInit ? ac.fireOnInit() : changeFired = ac.fireOnChange(oldSelectedItems, ac.getValue());
+        opts.onSetFinish.call(ac, changeFired);
         return;
       }
 
@@ -675,8 +676,8 @@
             ac.badge.add(item, tmpData);
           });
         }).always(function () {
-          opts.fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
-          opts.onSetFinish.call(ac);
+          opts.fireInit ? ac.fireOnInit() : changeFired = ac.fireOnChange(oldSelectedItems, ac.getValue());
+          opts.onSetFinish.call(ac, changeFired);
         });
       } else {
         var lastSearchData = ac.data, needCheckRemote = ac.params.forceSelect && ac.params.loadData;
@@ -695,16 +696,16 @@
                 ac.badge.add(item, tmpData);
               }).always(function () {
                 if (++checkedItemCount == toCheckCount) {
-                  opts.fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
-                  opts.onSetFinish.call(ac);
+                  opts.fireInit ? ac.fireOnInit() : changeFired = ac.fireOnChange(oldSelectedItems, ac.getValue());
+                  opts.onSetFinish.call(ac, changeFired);
                 }
               });
             }
           } else ac.badge.add(item);
         });
         if (!needCheckRemote) {
-          opts.fireInit ? ac.fireOnInit() : ac.fireOnChange(oldSelectedItems, ac.getValue());
-          opts.onSetFinish.call(ac);
+          opts.fireInit ? ac.fireOnInit() : changeFired = ac.fireOnChange(oldSelectedItems, ac.getValue());
+          opts.onSetFinish.call(ac, changeFired);
         }
       }
     };
@@ -758,6 +759,7 @@
         if (allItemsSame) fire = false;
       }
       if (fire) ac.params.el.trigger('bs.autocomplete.change', [oldItems, newItems]);
+      return fire;
     };
 
     // fireOnSelect

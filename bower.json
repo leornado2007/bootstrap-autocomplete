@@ -1,6 +1,6 @@
 {
   "name": "bootstrap-autocomplete",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "bootstrap jquery autocomplete",
   "main": "dist/js/bootstrap-autocomplete.js",
   "authors": [
