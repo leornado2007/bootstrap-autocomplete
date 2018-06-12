@@ -769,6 +769,9 @@
 
     // fireOnInit
     ac.fireOnInit = function () {
+      if (ac.isInitialized) return;
+
+      ac.isInitialized = true;
       ac.params.el.trigger('bs.autocomplete.inited');
     };
 
