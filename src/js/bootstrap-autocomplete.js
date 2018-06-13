@@ -234,6 +234,7 @@
         if (ac.selectedItems.length <= 0) ac.input.blur();
         ac.close();
         ac.placeholder.refresh();
+        ac.fireBadgeRemoved();
         stopEvent(e);
       });
 
@@ -778,6 +779,11 @@
     // fireOnFocus
     ac.fireOnFocus = function () {
       ac.params.el.trigger('bs.autocomplete.focus');
+    };
+
+    // fireBadgeRemoved
+    ac.fireBadgeRemoved = function () {
+      ac.params.el.trigger('bs.autocomplete.badge.removed');
     };
 
     // fireOnBlur
