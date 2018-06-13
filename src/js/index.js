@@ -112,6 +112,10 @@ $(function () {
   $('#ac4').on($.extend(getListeners('ac4', 'value4'), {})).bsAutoComplete({
     minChar: 0, data: data, multiple: false
   });
+  $('#ac4Btn').click(function () {
+    var ac4 = $('#ac4').data('bsAutoComplete');
+    ac4.setReadonly(!ac4.isReadonly());
+  });
 
   // ac5
   $('#ac5').on($.extend(getListeners('ac5', 'value5'), {})).bsAutoComplete({
