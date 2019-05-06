@@ -78,7 +78,7 @@ gulp.task('watch', ['site'], function () {
 });
 
 gulp.task('server', ['watch'], function () {
-  var server = connect.server({root: siteDir, livereload: true});
+  var server = connect.server({root: siteDir, livereload: true, host: '192.168.2.109'});
   return gulp.src('.').pipe(open({uri: 'http://' + server.host + ':' + server.port}));
 });
 

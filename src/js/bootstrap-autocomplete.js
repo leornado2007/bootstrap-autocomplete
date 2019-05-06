@@ -18,6 +18,8 @@
     multiple: true
   };
 
+  var isIE = navigator.userAgent.indexOf('Trident') > -1;
+
   // KEY_CODES
   var KEY_CODES = {
     ENTER: 13, TAB: 9, LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, ESC: 27, BACK: 8, DELETE: 46
@@ -441,7 +443,7 @@
       inputEl.val(text);
       if (!input.isFocused && focus !== false) input.focus();
       input.updateSizer();
-      setCaretPosition(inputEl[0]);
+      if (isIE && focus !== false) setCaretPosition(inputEl[0]);
     };
 
     // confirmValue
@@ -451,6 +453,11 @@
       if (isEsc) {
         if (ac.editingItem) added = ac.badge.add(ac.editingItem.item);
       } else added = ac.badge.add(inputEl.val());
+
+      //if (isIE && ac.isSingleMode() && fromBlur) {
+      //  ac.close();
+      //  return;
+      //}
 
       if (ac.isSingleMode()) {
         if (!added) {
@@ -554,6 +561,7 @@
               .mousedown(function (e) {
                 if (ac.isReadonly()) return;
 
+                if (isIE) ac.input.blur();
                 ac.input.clear();
                 ac.badge.add(item);
                 stopEvent(e);
@@ -1017,6 +1025,7 @@
       click: function (e) {
         if (ac.isReadonly()) return;
         ac.input.focus();
+        if (ac.input.isFocused) stopEvent(e);
       },
       mouseover: elOverHandler
     });
