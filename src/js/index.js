@@ -125,11 +125,34 @@ $(function () {
 
   $('#ac5AddBtn').click(function () {
     var ac5 = $('#ac5').data('bsAutoComplete');
-    ac5.addValue([{c: 'add value', n: '添加的项目'}], onSetFinish('addValue', 'ac3'));
+    ac5.addValue([{c: 'add value', n: '添加的项目'}], onSetFinish('addValue', 'ac5'));
   });
   $('#ac5SetBtn').click(function () {
     var ac5 = $('#ac5').data('bsAutoComplete');
-    ac5.setValue([{c: 'set value', n: '设置的项目'}], onSetFinish('setValue', 'ac3'));
+    ac5.setValue([{c: 'set value', n: '设置的项目'}], onSetFinish('setValue', 'ac5'));
+  });
+
+  // ac6
+  var itemTpl = '<div>\
+          <div><span class="badge">{name}</span>:<span class="label label-success">{key}</span></div>\
+          <div><span class="alert alert-info">{desc}</span></div>\
+      </div>';
+  var ac6MetaData = [
+    {c: 'id1', od: {name: '设置的项目1', arr: [1, 2], jso: {key: '子项1'}}},
+    {c: 'id2', od: {name: '设置的项目2', arr: [1, 2], jso: {key: '子项2'}}}
+  ], ac6data = [];
+  $.each(ac6MetaData, function (i, n) {
+    var name = itemTpl.format({name: n.od.name, key: n.od.jso.key, desc: JSON.stringify(n.od)});
+    ac6data.push($.extend({n: n.od.name, hn: name}, n));
+  });
+  $('#ac6').on(getListeners('ac6', 'value6')).bsAutoComplete({
+    data: ac6data,
+    cls: 'custom-item-html', minChar: 0, multiple: false, value: 'id2', forceSelect: true, itemUseHtml: true
+  });
+
+  $('#ac6SetBtn').click(function () {
+    var ac5 = $('#ac6').data('bsAutoComplete');
+    ac5.setValue([ac6data[1]], onSetFinish('setValue', 'ac6'));
   });
 
 });

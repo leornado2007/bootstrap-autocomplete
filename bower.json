@@ -28,6 +28,7 @@
     "respond": "1.4.2"
   },
   "devDependencies": {
-    "gulp": "^4.0.0"
+    "gulp": "^4.0.0",
+    "wnd-string-format": "^0.0.9"
   }
 }

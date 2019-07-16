@@ -8,6 +8,11 @@
 
   <link rel="stylesheet" href="css/bootstrap-autocomplete.min.css">
 
+  <style type="text/css">
+    .custom-item-html .dropdown-menu .bs-autocomplete-item .text {
+      line-height: 3;
+    }
+  </style>
 </head>
 <body style="margin-top: 200px;">
 
@@ -106,6 +111,23 @@
     <div class="form-group">
       <label class="col-sm-2 control-label">VALUE 5</label>
       <div id="value5" class="col-sm-10" style="padding-top: 7px"></div>
+    </div>
+
+    <!-- AUTOCOMPLETE 6 -->
+    <div class="form-group">
+      <label class="col-sm-2 control-label">AC 6</label>
+
+      <div class="col-sm-6">
+        <div id="ac6"></div>
+      </div>
+      <div class="col-sm-2">
+        <a href="javascript:" class="btn btn-default" id="ac6SetBtn">SET VALUE</a>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label">VALUE 6</label>
+      <div id="value6" class="col-sm-10" style="padding-top: 7px"></div>
     </div>
 
   </form>

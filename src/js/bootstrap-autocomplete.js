@@ -213,12 +213,12 @@
       }
       delete ac.editingItem;
 
-      var badgeEl, itemName = item.n || item.name;
+      var badgeEl, itemName = item.n || item.name, customNameHtml = item.hn || item.htmlName;
       if (ac.params.badgeRender) badgeEl = ac.params.badgeRender.call(ac, item);
       else {
         badgeEl = $(TPLS.badgeTpl);
         var text = badgeEl.find('.badge-text');
-        if (ac.params.itemUseHtml) text.append(ohtml($(itemName)));
+        if (ac.params.itemUseHtml) text.append(ohtml($(customNameHtml || itemName)));
         else text.text(itemName);
         text.attr('title', itemName);
       }
@@ -548,12 +548,12 @@
       if (data.length > 0) {
         var matched = false;
         $.each(data, function (i, item) {
-          var itemEl, itemName = item.n || item.name, itemCode = item.c || item.code;
+          var itemEl, itemName = item.n || item.name, itemCode = item.c || item.code, customNameHtml = item.hn || item.htmlName;
           if (ac.params.itemRender) ac.params.itemRender.call(ac, itemEl, item, searchText);
           else {
             itemEl = $(TPLS.dropdownItemTpl);
             var text = itemEl.find('.text');
-            if (ac.params.itemUseHtml) text.append(ohtml($(itemName)));
+            if (ac.params.itemUseHtml) text.append(ohtml($(customNameHtml || itemName)));
             else text.text(itemName);
           }
 
