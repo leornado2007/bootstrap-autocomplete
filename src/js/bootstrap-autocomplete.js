@@ -259,7 +259,7 @@
       if (ac.params.filtSame && ac.selectedItems.length > 0) {
         var hasSame = ac.findSelectedItem(item) >= 0;
         if (hasSame) {
-          if (ac.isSingleMode()) return true;
+          if (!ac.isSingleMode()) return true;
         } else doAdd = true;
       } else doAdd = true;
 
