@@ -257,11 +257,10 @@
       });
 
       var doAdd = false;
-      if (ac.params.filtSame && ac.selectedItems.length > 0) {
+      if (ac.params.filtSame && ac.selectedItems.length > 0 && !ac.isSingleMode()) {
         var hasSame = ac.findSelectedItem(item) >= 0;
-        if (hasSame) {
-          if (!ac.isSingleMode()) return true;
-        } else doAdd = true;
+        if (hasSame) return true;
+        else doAdd = true;
       } else doAdd = true;
 
       if (doAdd) {
