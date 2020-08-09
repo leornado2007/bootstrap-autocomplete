@@ -48,16 +48,16 @@ $(function () {
     return {
       'bs.autocomplete.change': onchange(valueId), 'bs.autocomplete.inited': oninit(bsId, valueId),
       'bs.autocomplete.select': onselect('onselect', bsId), 'bs.autocomplete.deselect': ondeselect('deselect', bsId),
-      'bs.autocomplete.clear': onclear('onclear', bsId), 'bs.autocomplete.focus': onFocus('focus', bsId),
-      'bs.autocomplete.blur': onBlur('blur', bsId)
+      'bs.autocomplete.clear' : onclear('onclear', bsId), 'bs.autocomplete.focus': onFocus('focus', bsId),
+      'bs.autocomplete.blur'  : onBlur('blur', bsId)
     }
   };
 
   // ac1
   $('#ac1').on($.extend(getListeners('ac1', 'value1'), {})).bsAutoComplete({
-    minChar: 3, filtSame: true, forceSelect: true,
-    placeHolder: '请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择',
-    loadData: emailLoader, loadDataItems: emailItemsLoader,
+    minChar          : 3, filtSame: true, forceSelect: true,
+    placeHolder      : '请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择请选择',
+    loadData         : emailLoader, loadDataItems: emailItemsLoader,
     getText4BadgeEdit: function (item, text) {
       return text.indexOf('@') >= 0 ? text.substring(0, text.indexOf('@')) : text
     }
@@ -74,8 +74,8 @@ $(function () {
       $('#ac2').show();
     }
   })).bsAutoComplete({
-    forceSelect: true, value: ['snow_white@gmail.com', 'Zwerge_1@gmail.com'],
-    loadData: emailLoader, loadDataItems: emailItemsLoader,
+    forceSelect      : true, value: ['snow_white@gmail.com', 'Zwerge_1@gmail.com'],
+    loadData         : emailLoader, loadDataItems: emailItemsLoader,
     getText4BadgeEdit: function (item, text) {
       return text.indexOf('@') >= 0 ? text.substring(0, text.indexOf('@')) : text
     }
@@ -85,7 +85,7 @@ $(function () {
   $('#ac2Btn').click(function () {
     var ac2 = $('#ac2').data('bsAutoComplete');
     ac2.addValue(['Zwerge_' + (ZwergeIndex++ % 7 + 1) + '@gmail.com', 'Zwerge_' + (ZwergeIndex++ % 7 + 1) + '@gmail.com'],
-        onSetFinish('addValue', 'ac3'));
+      onSetFinish('addValue', 'ac3'));
   });
   $('#ac2ResizeBtn').click(function () {
     var ac2 = $('#ac2').data('bsAutoComplete');
@@ -119,8 +119,8 @@ $(function () {
 
   // ac5
   $('#ac5').on($.extend(getListeners('ac5', 'value5'), {})).bsAutoComplete({
-    data: data.concat([{c: 'add value', n: '添加的项目'}, {c: 'set value', n: '设置的项目'}, 'hello world']),
-    multiple: false, value: 'hello world', forceSelect: true
+    data    : data.concat([{c: 'add value', n: '添加的项目'}, {c: 'set value', n: '设置的项目'}, 'hello world']),
+    multiple: false, value: 'hello world', forceSelect: true, showAllWhenSingleForceSelectFocus: true
   });
 
   $('#ac5AddBtn').click(function () {
@@ -147,7 +147,7 @@ $(function () {
   });
   $('#ac6').on(getListeners('ac6', 'value6')).bsAutoComplete({
     data: ac6data,
-    cls: 'custom-item-html', minChar: 0, multiple: false, value: 'id2', forceSelect: true, itemUseHtml: true
+    cls : 'custom-item-html', minChar: 0, multiple: false, value: 'id2', forceSelect: true, itemUseHtml: true
   });
 
   $('#ac6SetBtn').click(function () {

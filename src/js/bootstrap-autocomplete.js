@@ -3,19 +3,19 @@
 
   // DEF_OPTS
   var DEF_OPTS = {
-    cls: '',
-    placeHolder: '请选择',
-    searchMode: 'code name',
-    ignoreCase: true,
-    fitWdith: true,
-    dropUp: false,
-    filtSame: false,
-    badgeCls: '',
-    dblclick4Edit: false,
+    cls             : '',
+    placeHolder     : '请选择',
+    searchMode      : 'code name',
+    ignoreCase      : true,
+    fitWdith        : true,
+    dropUp          : false,
+    filtSame        : false,
+    badgeCls        : '',
+    dblclick4Edit   : false,
     inputSearchDelay: 200,
-    forceSelect: false,
-    minChar: 1,
-    multiple: true
+    forceSelect     : false,
+    minChar         : 1,
+    multiple        : true
   };
 
   var isIE = navigator.userAgent.indexOf('Trident') > -1;
@@ -27,20 +27,20 @@
 
   // TPLS
   var TPLS = {
-    containerTpl: '<div class="btn-group bootstrap-autocomplete form-control"></div>',
-    inputTpl: '<div class="delegate-input">\
+    containerTpl   : '<div class="btn-group bootstrap-autocomplete form-control"></div>',
+    inputTpl       : '<div class="delegate-input">\
         <input type="text" class="input-delegate">\
         <span class="input-delegate-sizer">W</span>\
       </div>',
-    dropdownTpl: '<ul class="dropdown-menu"></ul>',
-    placeholderTpl: '<div class="bs-autocomplete-placeholder"></div>',
-    clearBtnTpl: '<span class="bsautocomplete-icon-cross bsautocomplete-font icon-jiaochacross78"></span>',
+    dropdownTpl    : '<ul class="dropdown-menu"></ul>',
+    placeholderTpl : '<div class="bs-autocomplete-placeholder"></div>',
+    clearBtnTpl    : '<span class="bsautocomplete-icon-cross bsautocomplete-font icon-jiaochacross78"></span>',
     dropdownItemTpl: '<li>\
         <a href="javascript:">\
           <span class="text"></span>\
         </a>\
       </li>',
-    badgeTpl: '<span class="label label-primary">\
+    badgeTpl       : '<span class="label label-primary">\
         <a href="javascript:" class="badge-text"></a>\
         <a href="javascript:" class="badge-close">x</a>\
       </span>'
@@ -158,7 +158,8 @@
       var cloestBadgeEl, isLineMatched;
       ac.el.children('.' + CLS.badgeCt).each(function () {
         var badgeEl = $(this), pos = badgeEl.position();
-        var left = pos.left, top = pos.top, bottom = top + badgeEl.outerHeight(), right = pos.left + badgeEl.outerWidth();
+        var left = pos.left, top = pos.top, bottom = top + badgeEl.outerHeight(),
+          right = pos.left + badgeEl.outerWidth();
         if (mouseY >= top && mouseY <= bottom) {
           isLineMatched = true;
           if (mouseX <= left) {
@@ -284,7 +285,7 @@
 
     var loadTimeout;
     var inputEl = inputCt.children(':text').on({
-      'focus': function (e) {
+      'focus'  : function (e) {
         if (ac.isReadonly()) {
           inputEl.blur();
           stopEvent(e);
@@ -302,7 +303,7 @@
         }
         ac.fireOnFocus();
       },
-      'blur': function () {
+      'blur'   : function () {
         if (!input.isFocused) return;
         input.isFocused = false;
         ac.el.removeClass('focus');
@@ -402,7 +403,7 @@
           }, ac.params.inputSearchDelay);
         }
       },
-      'keyup': function (e) {
+      'keyup'  : function (e) {
         if (ac.isReadonly()) return;
         input.updateSizer();
       }
@@ -548,7 +549,8 @@
       if (data.length > 0) {
         var matched = false;
         $.each(data, function (i, item) {
-          var itemEl, itemName = item.n || item.name, itemCode = item.c || item.code, customNameHtml = item.hn || item.htmlName;
+          var itemEl, itemName = item.n || item.name, itemCode = item.c || item.code,
+            customNameHtml = item.hn || item.htmlName;
           if (ac.params.itemRender) ac.params.itemRender.call(ac, itemEl, item, searchText);
           else {
             itemEl = $(TPLS.dropdownItemTpl);
@@ -558,14 +560,14 @@
           }
 
           itemEl.addClass('bs-autocomplete-item').data('bsAutoCompleteItem', item).appendTo(panelEl)
-              .mousedown(function (e) {
-                if (ac.isReadonly()) return;
+            .mousedown(function (e) {
+              if (ac.isReadonly()) return;
 
-                if (isIE) ac.input.blur();
-                ac.input.clear();
-                ac.badge.add(item);
-                stopEvent(e);
-              });
+              if (isIE) ac.input.blur();
+              ac.input.clear();
+              ac.badge.add(item);
+              stopEvent(e);
+            });
 
           if (!matched && searchText) {
             if (ac.editingItem && ac.editingItem.text == searchText) {
@@ -727,7 +729,8 @@
 
     // openOnFocus
     ac.openOnFocus = function () {
-      ac.loadData().then(function () {
+      var showAllItemsWhenFirstFocus = ac.params.showAllWhenSingleForceSelectFocus && ac.params.forceSelect && ac.isSingleMode();
+      ac.loadData(undefined, undefined, showAllItemsWhenFirstFocus).then(function () {
         ac.open();
         ac.panel.render();
       });
@@ -953,8 +956,8 @@
     };
 
     // loadData
-    ac.loadData = function (searchText, specialData) {
-      searchText = searchText || ac.input.getSearchText();
+    ac.loadData = function (searchText, specialData, useBlankSearchText) {
+      searchText = useBlankSearchText ? '' : (searchText || ac.input.getSearchText());
       var defered = $.Deferred();
 
       specialData = specialData || ac.data;
@@ -1022,7 +1025,7 @@
           //ac.input.focus();
         }
       },
-      click: function (e) {
+      click    : function (e) {
         if (ac.isReadonly()) return;
         ac.input.focus();
         if (ac.input.isFocused) stopEvent(e);
