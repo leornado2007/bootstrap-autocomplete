@@ -559,6 +559,7 @@
           }
 
           itemEl.addClass('bs-autocomplete-item').data('bsAutoCompleteItem', item).appendTo(panelEl)
+            .attr('title', itemName)
             .mousedown(function (e) {
               if (ac.isReadonly()) return;
 
