@@ -94,9 +94,11 @@ $(function () {
 
   // ac3
   var data = [];
-  for (var i = 0; i < 100; i++) data.push({code: 'code-' + i, name: '项目-' + i})
+  for (var i = 0; i < 100; i++) data.push({code: 'code-' + i, name: '项目-' + i});
+  var data2 = [];
+  for (var i = 0; i < 100; i++) data2.push({code: 'code-' + i, name: '项目-' + i, optGroup: i % 4 === 0});
   $('#ac3').on($.extend(getListeners('ac3', 'value3'), {})).bsAutoComplete({
-    minChar: 0, data: data, filtSame: true
+    minChar: 0, data: data2, filtSame: true
   });
 
   $('#ac3Btn').click(function () {
@@ -119,8 +121,8 @@ $(function () {
 
   // ac5
   $('#ac5').on($.extend(getListeners('ac5', 'value5'), {})).bsAutoComplete({
-    data    : data.concat([{c: 'add value', n: '添加的项目'}, {c: 'set value', n: '设置的项目'}, 'hello world']),
-    minChar: 0,  multiple: false,  forceSelect: true, showAllWhenSingleForceSelectFocus: true, filtSame: true
+    data   : data.concat([{c: 'add value', n: '添加的项目'}, {c: 'set value', n: '设置的项目'}, 'hello world']),
+    minChar: 0, multiple: false, forceSelect: true, showAllWhenSingleForceSelectFocus: true, filtSame: true
   });
 
   $('#ac5AddBtn').click(function () {

@@ -32,7 +32,7 @@
         <input type="text" class="input-delegate">\
         <span class="input-delegate-sizer">W</span>\
       </div>',
-    dropdownTpl    : '<ul class="dropdown-menu"></ul>',
+    dropdownTpl    : '<ul class="dropdown-menu bs-autocomplete-menu"></ul>',
     placeholderTpl : '<div class="bs-autocomplete-placeholder"></div>',
     clearBtnTpl    : '<span class="bsautocomplete-icon-cross bsautocomplete-font icon-jiaochacross78"></span>',
     dropdownItemTpl: '<li>\
@@ -48,7 +48,8 @@
 
   // CLS
   var CLS = {
-    badgeCt: 'bs-autocomplete-badge'
+    badgeCt     : 'bs-autocomplete-badge',
+    dropdownItem: 'bs-autocomplete-item'
   };
 
   // escapeRegex
@@ -505,15 +506,21 @@
 
     // moveSelect
     panel.moveSelect = function (isUp) {
-      var selItem = panelEl.children('li.selected'), moveToItem;
+      var selItem = panelEl.children('li.selected'), moveToItem, itemCls = '.' + CLS.dropdownItem;
       if (selItem.size() > 0) {
         moveToItem = isUp ? selItem.prev() : selItem.next();
+
+        while (moveToItem.size() > 0) {
+          if (moveToItem.hasClass(CLS.dropdownItem)) break;
+          else moveToItem = isUp ? moveToItem.prev() : moveToItem.next();
+        }
+
         if (moveToItem.size() <= 0) {
-          var items = panelEl.children();
+          var items = panelEl.children(itemCls);
           moveToItem = isUp ? $(items[items.size() - 1]) : $(items[0]);
         }
       } else {
-        var items = panelEl.children();
+        var items = panelEl.children(itemCls);
         if (items.size() > 0) moveToItem = isUp ? $(items[items.size() - 1]) : $(items[0]);
       }
 
@@ -546,7 +553,8 @@
 
       var ei = ac.editingItem && ac.editingItem.item || {}, eiCode = ei.c || ei.code, eiName = ei.n || ei.name;
       if (data.length > 0) {
-        var matched = false;
+        var matched = false, hasOptGroup;
+
         $.each(data, function (i, item) {
           var itemEl, itemName = item.n || item.name, itemCode = item.c || item.code,
             customNameHtml = item.hn || item.htmlName;
@@ -558,10 +566,22 @@
             else text.text(itemName);
           }
 
-          itemEl.addClass('bs-autocomplete-item').data('bsAutoCompleteItem', item).appendTo(panelEl)
+          if (item.optGroup === true) {
+            itemEl.addClass('bs-autocomplete-group');
+            if (!hasOptGroup) {
+              hasOptGroup = true;
+              panelEl.addClass('bs-autocomplete-grouped');
+            }
+          } else itemEl.addClass(CLS.dropdownItem);
+
+          itemEl.data('bsAutoCompleteItem', item).appendTo(panelEl)
             .attr('title', itemName)
             .mousedown(function (e) {
               if (ac.isReadonly()) return;
+              if (item.optGroup) {
+                stopEvent(e);
+                return;
+              }
 
               if (isIE) ac.input.blur();
               ac.input.clear();

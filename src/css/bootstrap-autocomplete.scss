@@ -185,6 +185,26 @@ $default-label-color: #777;
         }
       }
     }
+
+    &.bs-autocomplete-grouped {
+      li.bs-autocomplete-group {
+        a:hover, a:focus, a:active {
+          background: transparent;
+        }
+
+        .text {
+          font-style: italic;
+          font-weight: bold;
+        }
+      }
+
+
+      li.bs-autocomplete-item {
+        .text {
+          text-indent: 1em;
+        }
+      }
+    }
   }
 
   &:not([class*="form-control"]) {
