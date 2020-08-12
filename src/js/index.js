@@ -94,7 +94,7 @@ $(function () {
 
   // ac3
   var data = [];
-  for (var i = 0; i < 100; i++) data.push({code: 'code-' + i, name: '项目-' + i});
+  for (var i = 0; i < 100; i++) data.push({code: 'code-' + i, name: '项目-'});
   var data2 = [];
   for (var i = 0; i < 100; i++) data2.push({code: 'code-' + i, name: '项目-' + i, optGroup: i % 4 === 0});
   $('#ac3').on($.extend(getListeners('ac3', 'value3'), {})).bsAutoComplete({

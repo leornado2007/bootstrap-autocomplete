@@ -721,8 +721,9 @@
               checkedItemCount++;
             } else {
               var itemCode = item.c || item.code, itemName = item.n || item.name;
-              var searchText = ac.isInSearchMode('code') ? itemCode : itemName, tmpData = [];
-              ac.loadData(searchText, tmpData).then(function (tmpData) {
+              var searchMode = ac.isInSearchMode('name') ? 'name' : 'code';
+              var searchText = searchMode == 'code' ? itemCode : itemName, tmpData = [];
+              ac.loadData(searchText, tmpData, searchMode).then(function (tmpData) {
                 lastSearchData = tmpData;
                 ac.badge.add(item, tmpData);
               }).always(function () {
