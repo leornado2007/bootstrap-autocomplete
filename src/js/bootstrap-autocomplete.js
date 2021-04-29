@@ -573,6 +573,7 @@
               panelEl.addClass('bs-autocomplete-grouped');
             }
           } else itemEl.addClass(CLS.dropdownItem);
+          if (item.cls) itemEl.addClass(item.cls);
 
           itemEl.data('bsAutoCompleteItem', item).appendTo(panelEl)
             .attr('title', itemName)
