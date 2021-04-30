@@ -27,9 +27,7 @@ $default-label-color: #777;
     position: absolute;
     cursor: pointer;
 
-    &:hover {
-      opacity: 0.7;
-    }
+    &:hover { opacity: 0.7; }
   }
 
   &.focus {
@@ -39,18 +37,14 @@ $default-label-color: #777;
   }
 
   &.selected {
-    .bsautocomplete-icon-cross {
-      visibility: visible;
-    }
+    .bsautocomplete-icon-cross { visibility: visible; }
   }
 
   &.readonly {
     cursor: no-drop;
 
     &.selected {
-      .bsautocomplete-icon-cross {
-        visibility: hidden;
-      }
+      .bsautocomplete-icon-cross { visibility: hidden; }
     }
 
     .bs-autocomplete-badge.label {
@@ -162,9 +156,7 @@ $default-label-color: #777;
   }
 
   > .dropdown-menu {
-    &.no-selectable-items {
-      display: none;
-    }
+    &.no-selectable-items { display: none; }
 
     min-width: unset;
     max-width: 120px;
@@ -192,13 +184,9 @@ $default-label-color: #777;
 
     &.bs-autocomplete-grouped {
       li.bs-autocomplete-group {
-        &.bs-autocomplete-group-hide {
-          display: none;
-        }
+        &.bs-autocomplete-group-hide { display: none; }
 
-        a:hover, a:focus, a:active {
-          background: transparent;
-        }
+        a:hover, a:focus, a:active { background: transparent; }
 
         .text {
           font-style: italic;
@@ -206,22 +194,17 @@ $default-label-color: #777;
         }
       }
 
-
       li.bs-autocomplete-item {
-        &.multiple-hide-selected {
-          display: none;
-        }
-
-        .text {
-          text-indent: 1em;
-        }
+        .text { text-indent: 1em; }
       }
     }
+
+    li.bs-autocomplete-item.multiple-hide-selected { display: none; }
+
+    // dropdown-menu
   }
 
-  &:not([class*="form-control"]) {
-    width: $width-default;
-  }
+  &:not([class*="form-control"]) { width: $width-default; }
 
   &.form-control {
     &.fit-width {

@@ -638,7 +638,6 @@
         if (lastGroupEl && lastGroupChildCount <= 0)
           lastGroupEl.addClass('bs-autocomplete-group-hide');
 
-        console.log(selectableItemCount);
         if (selectableItemCount <= 0) {
           panelEl.addClass('no-selectable-items');
         } else {
