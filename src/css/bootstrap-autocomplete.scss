@@ -227,6 +227,24 @@ $default-label-color: #777;
     }
   }
 
+  // bootstrap-autocomplete
+}
+
+.input-group {
+  .form-control.bs-ac-ct-resize {
+    padding: 0;
+    position: relative;
+    min-height: 34px;
+    border: 0;
+
+    & > .bootstrap-autocomplete.form-control {
+      min-height: 34px;
+      background: transparent;
+      position: absolute;
+      border-top-right-radius: 4px;
+      border-bottom-right-radius: 4px;
+    }
+  }
 }
 
 @keyframes bsAutoCompleteLoadingCircle {

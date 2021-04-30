@@ -27,20 +27,21 @@
 
   // TPLS
   var TPLS = {
-    containerTpl   : '<div class="btn-group bootstrap-autocomplete form-control"></div>',
-    inputTpl       : '<div class="delegate-input">\
+    inputDelegateContainerTpl: '<div class="input-delegate-ct"></div>',
+    containerTpl             : '<div class="btn-group bootstrap-autocomplete form-control"></div>',
+    inputTpl                 : '<div class="delegate-input">\
         <input type="text" class="input-delegate">\
         <span class="input-delegate-sizer">W</span>\
       </div>',
-    dropdownTpl    : '<ul class="dropdown-menu bs-autocomplete-menu"></ul>',
-    placeholderTpl : '<div class="bs-autocomplete-placeholder"></div>',
-    clearBtnTpl    : '<span class="bsautocomplete-icon-cross bsautocomplete-font icon-jiaochacross78"></span>',
-    dropdownItemTpl: '<li>\
+    dropdownTpl              : '<ul class="dropdown-menu bs-autocomplete-menu"></ul>',
+    placeholderTpl           : '<div class="bs-autocomplete-placeholder"></div>',
+    clearBtnTpl              : '<span class="bsautocomplete-icon-cross bsautocomplete-font icon-jiaochacross78"></span>',
+    dropdownItemTpl          : '<li>\
         <a href="javascript:">\
           <span class="text"></span>\
         </a>\
       </li>',
-    badgeTpl       : '<span class="label label-primary">\
+    badgeTpl                 : '<span class="label label-primary">\
         <a href="javascript:" class="badge-text"></a>\
         <a href="javascript:" class="badge-close">x</a>\
       </span>'
@@ -792,7 +793,11 @@
         });
         if (allItemsSame) fire = false;
       }
-      if (fire) ac.params.el.trigger('bs.autocomplete.change', [oldItems, newItems]);
+      if (fire) {
+        if (ac.resizeContainer)
+          setTimeout(function () { ac.containerEl.height(ac.el.outerHeight()); }, 0);
+        ac.params.el.trigger('bs.autocomplete.change', [oldItems, newItems]);
+      }
       return fire;
     };
 
@@ -1007,12 +1012,41 @@
     };
 
     ac.data = [], ac.el = $(ac.params.tpls.containerTpl).addClass(ac.params.cls);
+
+    // 解决在 input-group 中的样式问题
+    var inputGroupEl = params.el.parents('.input-group'),
+      isUnderInputGroup = ac.isUnderInputGroup = inputGroupEl.size() > 0;
+
+    var isOriginInputEl = params.el.is(':input');
+    if (isOriginInputEl && !ac.params.replace) ac.params.replace = true;
+
+    // 原始元素为 input 时且父元素为 input-group 时放入代理容器
+    var inputDelegateCtEl;
+    if (isOriginInputEl && params.el.parent().hasClass('input-group')) {
+      inputDelegateCtEl = ac.inputDelegateCtEl = $(ac.params.tpls.inputDelegateContainerTpl)
+        .addClass('form-control');
+      inputDelegateCtEl.insertAfter(params.el);
+      params.el.appendTo(inputDelegateCtEl);
+    }
+
     if (ac.params.fitWdith !== false) ac.el.addClass('fit-width');
     if (ac.params.dropUp) ac.el.addClass('dropup');
     if (ac.params.replace) {
       ac.el.insertAfter(params.el);
       params.el.hide();
-    } else ac.el.appendTo(params.el);
+    } else {
+      if (inputDelegateCtEl) {
+        ac.el.appendTo(inputDelegateCtEl);
+      } else {
+        if (isUnderInputGroup) params.el.addClass('form-control');
+        ac.el.appendTo(params.el);
+      }
+    }
+
+    var bsAcCtEl = ac.containerEl = ac.el.parent(), resizeHeightCls = 'bs-ac-ct-resize';
+    if (isUnderInputGroup && bsAcCtEl.hasClass('form-control')) bsAcCtEl.addClass(resizeHeightCls);
+    if (ac.params.disableResizeContainer !== false) ac.resizeContainer = bsAcCtEl.hasClass(resizeHeightCls);
+
     ac.input = new Input(ac);
     ac.panel = new DropdownPanel(ac);
     ac.badge = new Badge(ac);

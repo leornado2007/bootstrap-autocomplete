@@ -111,6 +111,22 @@ $(function () {
     ac3.addValue([{c: 'code-12', n: '项目-12'}], onSetFinish('addValue', 'ac3'));
   });
 
+  // ac7
+  var longValue = '';
+  for (var i = 0; i < 40; i++) longValue += 'asdf';
+  $('#ac7').on($.extend(getListeners('ac7', 'value7'), {})).bsAutoComplete({
+    minChar: 0, data: data2, filtSame: true, value: [longValue, longValue + '2']
+  });
+
+  $('#ac7Btn').click(function () {
+    var ac7 = $('#ac7').data('bsAutoComplete');
+    ac7.setReadonly(!ac7.isReadonly());
+  });
+  $('#ac7AddBtn').click(function () {
+    var ac7 = $('#ac7').data('bsAutoComplete');
+    ac7.addValue([{c: 'code-12', n: '项目-12'}], onSetFinish('addValue', 'ac7'));
+  });
+
   // ac4
   $('#ac4').on($.extend(getListeners('ac4', 'value4'), {})).bsAutoComplete({
     minChar: 0, data: data, multiple: false
@@ -118,6 +134,15 @@ $(function () {
   $('#ac4Btn').click(function () {
     var ac4 = $('#ac4').data('bsAutoComplete');
     ac4.setReadonly(!ac4.isReadonly());
+  });
+
+  // ac8
+  $('#ac8').on($.extend(getListeners('ac8', 'value8'), {})).bsAutoComplete({
+    minChar: 0, data: data, multiple: false, value: [longValue]
+  });
+  $('#ac8Btn').click(function () {
+    var ac8 = $('#ac8').data('bsAutoComplete');
+    ac8.setReadonly(!ac8.isReadonly());
   });
 
   // ac5
