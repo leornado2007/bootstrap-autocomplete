@@ -162,6 +162,10 @@ $default-label-color: #777;
   }
 
   > .dropdown-menu {
+    &.no-selectable-items {
+      display: none;
+    }
+
     min-width: unset;
     max-width: 120px;
     height: 180px;
@@ -188,6 +192,10 @@ $default-label-color: #777;
 
     &.bs-autocomplete-grouped {
       li.bs-autocomplete-group {
+        &.bs-autocomplete-group-hide {
+          display: none;
+        }
+
         a:hover, a:focus, a:active {
           background: transparent;
         }
@@ -200,6 +208,10 @@ $default-label-color: #777;
 
 
       li.bs-autocomplete-item {
+        &.multiple-hide-selected {
+          display: none;
+        }
+
         .text {
           text-indent: 1em;
         }

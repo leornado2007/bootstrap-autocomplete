@@ -1,7 +1,9 @@
 $(function () {
 
+  var printEvent = false;
   var mails = '126.com,163.com,gmail.com,sina.com,hotmail.com,qq.com,yahoo.com'.split(',').sort();
-  var emailLoader = function (searchText, callback) {
+  var emailLoader = function (searchText, callback, searchMode, from) {
+    if (from) console.log('from:', from);
     setTimeout(function () {
       var data = [];
       $.each(mails, function (i, domain) {
@@ -21,26 +23,26 @@ $(function () {
   };
   var onchange = function (valueId) {
     return function (e, oldValue, newValue) {
-      console.log('=====onchange======', valueId, newValue);
+      if (printEvent) console.log('=====onchange======', valueId, newValue);
       $('#' + valueId).text(JSON.stringify(newValue));
     };
   };
   var oninit = function (bsId, valueId) {
     return function () {
-      console.log('=====oninit======', bsId);
+      if (printEvent) console.log('=====oninit======', bsId);
       var value = $('#' + bsId).data('bsAutoComplete').getValue();
       $('#' + valueId).text(JSON.stringify(value));
     };
   };
   var onselect = onclear = ondeselect = onFocus = onBlur = function (eventType, bsId) {
     return function () {
-      console.log('====' + eventType + '====', bsId)
+      if (printEvent) console.log('====' + eventType + '====', bsId)
     }
   };
   var onSetFinish = function (eventType, bsId) {
     return {
       onSetFinish: function () {
-        console.log('====' + eventType + '====', bsId)
+        if (printEvent) console.log('====' + eventType + '====', bsId)
       }
     }
   };
@@ -111,22 +113,6 @@ $(function () {
     ac3.addValue([{c: 'code-12', n: '项目-12'}], onSetFinish('addValue', 'ac3'));
   });
 
-  // ac7
-  var longValue = '';
-  for (var i = 0; i < 40; i++) longValue += 'asdf';
-  $('#ac7').on($.extend(getListeners('ac7', 'value7'), {})).bsAutoComplete({
-    minChar: 0, data: data2, filtSame: true, value: [longValue, longValue + '2']
-  });
-
-  $('#ac7Btn').click(function () {
-    var ac7 = $('#ac7').data('bsAutoComplete');
-    ac7.setReadonly(!ac7.isReadonly());
-  });
-  $('#ac7AddBtn').click(function () {
-    var ac7 = $('#ac7').data('bsAutoComplete');
-    ac7.addValue([{c: 'code-12', n: '项目-12'}], onSetFinish('addValue', 'ac7'));
-  });
-
   // ac4
   $('#ac4').on($.extend(getListeners('ac4', 'value4'), {})).bsAutoComplete({
     minChar: 0, data: data, multiple: false
@@ -134,15 +120,6 @@ $(function () {
   $('#ac4Btn').click(function () {
     var ac4 = $('#ac4').data('bsAutoComplete');
     ac4.setReadonly(!ac4.isReadonly());
-  });
-
-  // ac8
-  $('#ac8').on($.extend(getListeners('ac8', 'value8'), {})).bsAutoComplete({
-    minChar: 0, data: data, multiple: false, value: [longValue]
-  });
-  $('#ac8Btn').click(function () {
-    var ac8 = $('#ac8').data('bsAutoComplete');
-    ac8.setReadonly(!ac8.isReadonly());
   });
 
   // ac5
@@ -181,6 +158,75 @@ $(function () {
   $('#ac6SetBtn').click(function () {
     var ac5 = $('#ac6').data('bsAutoComplete');
     ac5.setValue([ac6data[1]], onSetFinish('setValue', 'ac6'));
+  });
+
+  // ac7
+  var longValue = '';
+  for (var i = 0; i < 40; i++) longValue += 'asdf';
+  $('#ac7').on($.extend(getListeners('ac7', 'value7'), {})).bsAutoComplete({
+    minChar: 0, data: data2, filtSame: true, value: [longValue, longValue + '2']
+  });
+
+  $('#ac7Btn').click(function () {
+    var ac7 = $('#ac7').data('bsAutoComplete');
+    ac7.setReadonly(!ac7.isReadonly());
+  });
+  $('#ac7AddBtn').click(function () {
+    var ac7 = $('#ac7').data('bsAutoComplete');
+    ac7.addValue([{c: 'code-12', n: '项目-12'}], onSetFinish('addValue', 'ac7'));
+  });
+
+  // ac8
+  $('#ac8').on($.extend(getListeners('ac8', 'value8'), {})).bsAutoComplete({
+    minChar: 0, data: data, multiple: false, value: [longValue]
+  });
+  $('#ac8Btn').click(function () {
+    var ac8 = $('#ac8').data('bsAutoComplete');
+    ac8.setReadonly(!ac8.isReadonly());
+  });
+
+  // ac9
+  var emailLoaderWzSearchMode = function (searchText, callback, searchMode, from) {
+    if (from) console.log('from:', from);
+    var data = [];
+    if (!!searchMode) data.push({c: 'searchMode-test', n: '搜索模式测试'});
+    $.each(mails, function (i, domain) {
+      data.push(searchText + '@' + domain);
+    });
+    callback(data);
+  };
+  $('#ac9').on($.extend(getListeners('ac9', 'value9'), {})).bsAutoComplete({
+    minChar : 0, data: data2, filtSame: true, forceSelect: true,
+    loadData: emailLoaderWzSearchMode
+  });
+
+  $('#ac9Btn').click(function () {
+    var ac9 = $('#ac9').data('bsAutoComplete');
+    ac9.setReadonly(!ac9.isReadonly());
+  });
+  $('#ac9AddBtn').click(function () {
+    var ac9 = $('#ac9').data('bsAutoComplete');
+    ac9.addValue([{c: 'searchMode-test', n: '搜索模式测试'}], onSetFinish('addValue', 'ac9'));
+  });
+
+  // ac10
+  var data10 = [];
+  for (var i = 0; i < 100; i++) {
+    if (i % 4 != 0 && i != 1 && i != 10) continue;
+    // if (i % 4 != 0 && i != 1 && i % 10 != 0) continue;
+    data10.push({code: 'code-' + i, name: '项目-' + i, optGroup: i % 4 === 0, cls: 'custom-cls'});
+  }
+  $('#ac10').on($.extend(getListeners('ac10', 'value10'), {})).bsAutoComplete({
+    minChar: 0, data: data10, filtSame: true, hideOtherSelected4Multiple: true
+  });
+
+  $('#ac10Btn').click(function () {
+    var ac10 = $('#ac10').data('bsAutoComplete');
+    ac10.setReadonly(!ac10.isReadonly());
+  });
+  $('#ac10AddBtn').click(function () {
+    var ac10 = $('#ac10').data('bsAutoComplete');
+    ac10.addValue([{c: 'code-12', n: '项目-12'}], onSetFinish('addValue', 'ac10'));
   });
 
 });

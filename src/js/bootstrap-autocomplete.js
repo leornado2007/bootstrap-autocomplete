@@ -49,8 +49,10 @@
 
   // CLS
   var CLS = {
-    badgeCt     : 'bs-autocomplete-badge',
-    dropdownItem: 'bs-autocomplete-item'
+    badgeCt      : 'bs-autocomplete-badge',
+    dropdownItem : 'bs-autocomplete-item',
+    multiSelected: 'multiple-selected',
+    multiHideSel : 'multiple-hide-selected',
   };
 
   // escapeRegex
@@ -397,7 +399,7 @@
               return;
             }
 
-            ac.loadData().then(function () {
+            ac.loadData({from: 'keydown'}).then(function () {
               ac.open();
               ac.panel.render();
             });
@@ -508,17 +510,20 @@
     // moveSelect
     panel.moveSelect = function (isUp) {
       var selItem = panelEl.children('li.selected'), moveToItem, itemCls = '.' + CLS.dropdownItem;
+      var skipMultiSel = !ac.isSingleMode() && ac.params.hideOtherSelected4Multiple;
+      if (skipMultiSel) itemCls += ':not(.' + CLS.multiHideSel + ')';
       if (selItem.size() > 0) {
         moveToItem = isUp ? selItem.prev() : selItem.next();
 
         while (moveToItem.size() > 0) {
-          if (moveToItem.hasClass(CLS.dropdownItem)) break;
-          else moveToItem = isUp ? moveToItem.prev() : moveToItem.next();
+          if (moveToItem.hasClass(CLS.dropdownItem) && (!skipMultiSel || !moveToItem.hasClass(CLS.multiHideSel)))
+            break;
+          moveToItem = isUp ? moveToItem.prev() : moveToItem.next();
         }
 
         if (moveToItem.size() <= 0) {
           var items = panelEl.children(itemCls);
-          moveToItem = isUp ? $(items[items.size() - 1]) : $(items[0]);
+          if (items.size() > 0) moveToItem = isUp ? $(items[items.size() - 1]) : $(items[0]);
         }
       } else {
         var items = panelEl.children(itemCls);
@@ -551,15 +556,18 @@
     panel.render = function () {
       var data = ac.data || [], searchText = ac.input.getSearchText();
       panelEl.empty();
+      panelEl.scrollTop();
 
       var ei = ac.editingItem && ac.editingItem.item || {}, eiCode = ei.c || ei.code, eiName = ei.n || ei.name;
       if (data.length > 0) {
         var matched = false, hasOptGroup;
+        var isMultiMode = !ac.isSingleMode(), hideOtherSelected4Multiple = ac.params.hideOtherSelected4Multiple;
+        var lastGroupEl, lastGroupChildCount = 0, selectableItemCount = 0;
 
         $.each(data, function (i, item) {
           var itemEl, itemName = item.n || item.name, itemCode = item.c || item.code,
-            customNameHtml = item.hn || item.htmlName;
-          if (ac.params.itemRender) ac.params.itemRender.call(ac, itemEl, item, searchText);
+            customNameHtml = item.hn || item.htmlName, selectable = true;
+          if (ac.params.itemRender) itemEl = ac.params.itemRender.call(ac, item, searchText);
           else {
             itemEl = $(ac.params.tpls.dropdownItemTpl);
             var text = itemEl.find('.text');
@@ -567,13 +575,35 @@
             else text.text(itemName);
           }
 
+          if (isMultiMode) {
+            var selectedItem = ac.selectedItemMap[itemCode];
+            if (selectedItem && selectedItem === item) {
+              itemEl.addClass(CLS.multiSelected);
+              if (hideOtherSelected4Multiple) {
+                selectable = false;
+                itemEl.addClass(CLS.multiHideSel);
+              }
+            }
+          }
+
           if (item.optGroup === true) {
+            selectable = false;
             itemEl.addClass('bs-autocomplete-group');
             if (!hasOptGroup) {
               hasOptGroup = true;
               panelEl.addClass('bs-autocomplete-grouped');
             }
-          } else itemEl.addClass(CLS.dropdownItem);
+
+            if (lastGroupEl && lastGroupChildCount <= 0)
+              lastGroupEl.addClass('bs-autocomplete-group-hide');
+
+            lastGroupEl = itemEl;
+            lastGroupChildCount = 0;
+          } else {
+            if (lastGroupEl && selectable) lastGroupChildCount++;
+            if (selectable) selectableItemCount++;
+            itemEl.addClass(CLS.dropdownItem);
+          }
           if (item.cls) itemEl.addClass(item.cls);
 
           itemEl.data('bsAutoCompleteItem', item).appendTo(panelEl)
@@ -604,6 +634,17 @@
             if (matched) itemEl.addClass('selected');
           }
         });
+
+        if (lastGroupEl && lastGroupChildCount <= 0)
+          lastGroupEl.addClass('bs-autocomplete-group-hide');
+
+        console.log(selectableItemCount);
+        if (selectableItemCount <= 0) {
+          panelEl.addClass('no-selectable-items');
+        } else {
+          panelEl.removeClass('no-selectable-items');
+        }
+
       } else ac.close();
     };
 
@@ -638,7 +679,7 @@
     var ac = this;
     params = $.extend(true, {tpls: TPLS}, params || {});
     for (var def in DEF_OPTS) if (typeof params[def] === 'undefined') params[def] = DEF_OPTS[def];
-    ac.params = params, ac.initialized = false, ac.selectedItems = [], ac.readonly = false;
+    ac.params = params, ac.initialized = false, ac.selectedItems = [], ac.selectedItemMap = {}, ac.readonly = false;
 
     // htmlOverHandler
     var htmlOverHandler = function () {
@@ -713,7 +754,7 @@
           opts.onSetFinish.call(ac, changeFired);
         });
       } else {
-        var lastSearchData = ac.data, needCheckRemote = ac.params.forceSelect && ac.params.loadData;
+        var lastSearchData = ac.data, needCheckRemote = ac.params.forceSelect && ac.params.loadData && true;
         var toCheckCount = items.length, checkedItemCount = 0;
         if (items.length > 0 && !needCheckRemote) ac.data = (ac.params.data || []).slice();
         $.each(items, function (i, item) {
@@ -725,7 +766,13 @@
               var itemCode = item.c || item.code, itemName = item.n || item.name;
               var searchMode = ac.isInSearchMode('name') ? 'name' : 'code';
               var searchText = searchMode == 'code' ? itemCode : itemName, tmpData = [];
-              ac.loadData(searchText, tmpData, searchMode).then(function (tmpData) {
+              ac.loadData({
+                searchText                : searchText,
+                specialData               : tmpData,
+                showAllItemsWhenFirstFocus: false,
+                searchMode                : searchMode,
+                from                      : 'addValue'
+              }).then(function (tmpData) {
                 lastSearchData = tmpData;
                 ac.badge.add(item, tmpData);
               }).always(function () {
@@ -753,7 +800,7 @@
     // openOnFocus
     ac.openOnFocus = function () {
       var showAllItemsWhenFirstFocus = ac.params.showAllWhenSingleForceSelectFocus && ac.params.forceSelect && ac.isSingleMode();
-      ac.loadData(undefined, undefined, showAllItemsWhenFirstFocus).then(function () {
+      ac.loadData({showAllItemsWhenFirstFocus: showAllItemsWhenFirstFocus, from: 'openOnFocus'}).then(function () {
         ac.open();
         ac.panel.render();
       });
@@ -885,6 +932,7 @@
 
       var oldSelectedItems = ac.getValue();
       ac.selectedItems.splice(0, ac.selectedItems.length);
+      ac.selectedItemMap = {};
       ac.el.children('.' + CLS.badgeCt).remove();
       ac.el.removeClass('selected');
       ac.placeholder.refresh();
@@ -911,9 +959,13 @@
     ac.addSelected = function (item, fire) {
       var oldSelectedItems = ac.selectedItems.slice();
 
-      if (ac.isSingleMode()) ac.selectedItems.splice(0, ac.selectedItems.length);
+      if (ac.isSingleMode()) {
+        ac.selectedItems.splice(0, ac.selectedItems.length);
+        ac.selectedItemMap = {};
+      }
 
       ac.selectedItems.push(item);
+      ac.selectedItemMap[item.c || item.code] = item;
       if (ac.selectedItems.length > 0) ac.el.addClass('selected');
 
       if (fire !== false) {
@@ -928,6 +980,7 @@
       if (findIndex >= 0) {
         var oldSelectedItems = ac.selectedItems.slice();
         ac.selectedItems.splice(findIndex, 1);
+        delete ac.selectedItemMap[item.c || item.code];
         if (ac.selectedItems.length <= 0) ac.el.removeClass('selected');
 
         ac.fireOnDeSelect(item, ac.getValue());
@@ -999,30 +1052,39 @@
     };
 
     // loadData
-    ac.loadData = function (searchText, specialData, useBlankSearchText) {
-      searchText = useBlankSearchText ? '' : (searchText || ac.input.getSearchText());
+    ac.loadData = function (opts) {
+      opts = opts || {};
+      opts.searchText = opts.showAllItemsWhenFirstFocus ? '' : (opts.searchText || ac.input.getSearchText());
       var defered = $.Deferred();
 
-      specialData = specialData || ac.data;
-      specialData.splice(0, specialData.length);
+      opts.specialData = opts.specialData || ac.data;
+      opts.specialData.splice(0, opts.specialData.length);
       if (ac.params.loadData) {
-        ac.params.loadData.call(ac, searchText, function (data) {
+        ac.params.loadData.call(ac, opts.searchText, function (data) {
           if (data) {
             $.each(data, function (i, item) {
               if (isString(item)) item = {c: item, n: item};
-              specialData.push(item);
+              opts.specialData.push(item);
             });
-            defered.resolve(specialData);
+            defered.resolve(opts.specialData);
           } else defered.reject();
-        });
+        }, opts.searchMode, opts.from);
       } else {
-        var data = ac.params.data || [];
+        var data = ac.params.data || [], lastGroupItem;
         $.each(data, function (i, item) {
           if (isString(item)) item = {c: item, n: item};
-          if (searchText && !ac.isItemMatched(searchText, item)) return;
-          specialData.push(item);
+          if (item.optGroup === true) {
+            lastGroupItem = item;
+            return;
+          }
+          if (opts.searchText && !ac.isItemMatched(opts.searchText, item)) return;
+          if (lastGroupItem) {
+            opts.specialData.push(lastGroupItem);
+            lastGroupItem = undefined;
+          }
+          opts.specialData.push(item);
         });
-        defered.resolve(specialData);
+        defered.resolve(opts.specialData);
       }
       return defered.promise();
     };

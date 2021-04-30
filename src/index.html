@@ -19,165 +19,199 @@
     }
   </style>
 </head>
-<body style="margin-top: 50px;">
+<body>
 
 <div class="container">
   <form class="form-horizontal">
 
-    <!-- AUTOCOMPLETE 1 -->
-    <div class="form-group">
-      <label class="col-sm-2 control-label">AC 1</label>
+    <div class="row">
+      <div class="col-md-6">
+        <!-- AUTOCOMPLETE 1 -->
+        <div class="form-group">
+          <label class="col-sm-2 control-label">AC 1</label>
 
-      <div class="col-sm-6">
-        <div id="ac1"></div>
-      </div>
-      <div class="col-sm-4">
-        <a href="javascript:" class="btn btn-default" id="ac1Btn">SET VALUE</a>
-      </div>
-    </div>
+          <div class="col-sm-6">
+            <div id="ac1"></div>
+          </div>
+          <div class="col-sm-4">
+            <a href="javascript:" class="btn btn-default" id="ac1Btn">SET</a>
+          </div>
+        </div>
 
-    <div class="form-group">
-      <label class="col-sm-2 control-label">VALUE 1</label>
-      <div id="value1" class="col-sm-10" style="padding-top: 7px"></div>
-    </div>
+        <div class="form-group">
+          <label class="col-sm-2 control-label">VALUE 1</label>
+          <div id="value1" class="col-sm-10" style="padding-top: 7px"></div>
+        </div>
 
-    <!-- AUTOCOMPLETE 2 -->
-    <div class="form-group">
-      <label class="col-sm-2 control-label">AC 2</label>
+        <!-- AUTOCOMPLETE 2 -->
+        <div class="form-group">
+          <label class="col-sm-2 control-label">AC 2</label>
 
-      <div class="col-sm-6">
-        <div id="ac2"></div>
-      </div>
-      <div class="col-sm-2">
-        <a href="javascript:" class="btn btn-default" id="ac2Btn">ADD VALUE</a>
-      </div>
-      <div class="col-sm-2">
-        <a href="javascript:" class="btn btn-default" id="ac2ResizeBtn">RESIZE</a>
-      </div>
-    </div>
+          <div class="col-sm-6">
+            <div id="ac2"></div>
+          </div>
+          <div class="col-sm-4">
+            <a href="javascript:" class="btn btn-default" id="ac2Btn">ADD</a>
+            <a href="javascript:" class="btn btn-default" id="ac2ResizeBtn">RESIZE</a>
+          </div>
+        </div>
 
-    <div class="form-group">
-      <label class="col-sm-2 control-label">VALUE 2</label>
-      <div id="value2" class="col-sm-10" style="padding-top: 7px"></div>
-    </div>
+        <div class="form-group">
+          <label class="col-sm-2 control-label">VALUE 2</label>
+          <div id="value2" class="col-sm-10" style="padding-top: 7px"></div>
+        </div>
 
-    <!-- AUTOCOMPLETE 3 -->
-    <div class="form-group">
-      <label class="col-sm-2 control-label">AC 3</label>
+        <!-- AUTOCOMPLETE 3 -->
+        <div class="form-group">
+          <label class="col-sm-2 control-label">AC 3</label>
 
-      <div class="col-sm-6">
-        <div id="ac3"></div>
-      </div>
-      <div class="col-sm-2">
-        <a href="javascript:" class="btn btn-default" id="ac3Btn">READONLY</a>
-      </div>
-      <div class="col-sm-2">
-        <a href="javascript:" class="btn btn-default" id="ac3AddBtn">ADD VALUE</a>
-      </div>
-    </div>
+          <div class="col-sm-6">
+            <div id="ac3"></div>
+          </div>
+          <div class="col-sm-4">
+            <a href="javascript:" class="btn btn-default" id="ac3Btn">READONLY</a>
+            <a href="javascript:" class="btn btn-default" id="ac3AddBtn">ADD</a>
+          </div>
+        </div>
 
-    <div class="form-group">
-      <label class="col-sm-2 control-label">VALUE 3</label>
-      <div id="value3" class="col-sm-10" style="padding-top: 7px"></div>
-    </div>
+        <div class="form-group">
+          <label class="col-sm-2 control-label">VALUE 3</label>
+          <div id="value3" class="col-sm-10" style="padding-top: 7px"></div>
+        </div>
 
-    <!-- AUTOCOMPLETE 4 -->
-    <div class="form-group">
-      <label class="col-sm-2 control-label">AC 4</label>
+        <!-- AUTOCOMPLETE 4 -->
+        <div class="form-group">
+          <label class="col-sm-2 control-label">AC 4</label>
 
-      <div class="col-sm-8">
-        <div id="ac4"></div>
-      </div>
-      <div class="col-sm-2">
-        <a href="javascript:" class="btn btn-default" id="ac4Btn">READONLY</a>
-      </div>
-    </div>
+          <div class="col-sm-8">
+            <div id="ac4"></div>
+          </div>
+          <div class="col-sm-2">
+            <a href="javascript:" class="btn btn-default" id="ac4Btn">READONLY</a>
+          </div>
+        </div>
 
-    <div class="form-group">
-      <label class="col-sm-2 control-label">VALUE 4</label>
-      <div id="value4" class="col-sm-10" style="padding-top: 7px"></div>
-    </div>
+        <div class="form-group">
+          <label class="col-sm-2 control-label">VALUE 4</label>
+          <div id="value4" class="col-sm-10" style="padding-top: 7px"></div>
+        </div>
 
-    <!-- AUTOCOMPLETE 5 -->
-    <div class="form-group">
-      <label class="col-sm-2 control-label">AC 5</label>
+        <!-- AUTOCOMPLETE 5 -->
+        <div class="form-group">
+          <label class="col-sm-2 control-label">AC 5</label>
 
-      <div class="col-sm-6">
-        <div id="ac5"></div>
-      </div>
-      <div class="col-sm-2">
-        <a href="javascript:" class="btn btn-default" id="ac5AddBtn">ADD VALUE</a>
-      </div>
-      <div class="col-sm-2">
-        <a href="javascript:" class="btn btn-default" id="ac5SetBtn">SET VALUE</a>
-      </div>
-    </div>
+          <div class="col-sm-6">
+            <div id="ac5"></div>
+          </div>
+          <div class="col-sm-4">
+            <a href="javascript:" class="btn btn-default" id="ac5AddBtn">ADD</a>
+            <a href="javascript:" class="btn btn-default" id="ac5SetBtn">SET</a>
+          </div>
+        </div>
 
-    <div class="form-group">
-      <label class="col-sm-2 control-label">VALUE 5</label>
-      <div id="value5" class="col-sm-10" style="padding-top: 7px"></div>
-    </div>
-
-    <!-- AUTOCOMPLETE 6 -->
-    <div class="form-group">
-      <label class="col-sm-2 control-label">AC 6</label>
-
-      <div class="col-sm-6">
-        <div id="ac6"></div>
-      </div>
-      <div class="col-sm-2">
-        <a href="javascript:" class="btn btn-default" id="ac6SetBtn">SET VALUE</a>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="col-sm-2 control-label">VALUE 6</label>
-      <div id="value6" class="col-sm-10" style="padding-top: 7px"></div>
-    </div>
-
-    <!-- AUTOCOMPLETE 7 -->
-    <div class="form-group">
-      <label class="col-sm-2 control-label">AC 7</label>
-
-      <div class="col-sm-6">
-        <div class="input-group">
-          <span class="input-group-addon">@</span>
-          <div id="ac7"></div>
-<!--          <input id="ac7"/>-->
+        <div class="form-group">
+          <label class="col-sm-2 control-label">VALUE 5</label>
+          <div id="value5" class="col-sm-10" style="padding-top: 7px"></div>
         </div>
       </div>
-      <div class="col-sm-2">
-        <a href="javascript:" class="btn btn-default" id="ac7Btn">READONLY</a>
-      </div>
-      <div class="col-sm-2">
-        <a href="javascript:" class="btn btn-default" id="ac7AddBtn">ADD VALUE</a>
-      </div>
-    </div>
+      <div class="col-md-6">
 
-    <div class="form-group">
-      <label class="col-sm-2 control-label">VALUE 7</label>
-      <div id="value7" class="col-sm-10" style="padding-top: 7px; word-break: break-all"></div>
-    </div>
+        <!-- AUTOCOMPLETE 6 -->
+        <div class="form-group">
+          <label class="col-sm-2 control-label">AC 6</label>
 
-    <!-- AUTOCOMPLETE 8 -->
-    <div class="form-group">
-      <label class="col-sm-2 control-label">AC 8</label>
+          <div class="col-sm-6">
+            <div id="ac6"></div>
+          </div>
+          <div class="col-sm-2">
+            <a href="javascript:" class="btn btn-default" id="ac6SetBtn">SET</a>
+          </div>
+        </div>
 
-      <div class="col-sm-8">
-        <div class="input-group">
-          <span class="input-group-addon">@</span>
-<!--          <div id="ac8"></div>-->
-          <input id="ac8"/>
+        <div class="form-group">
+          <label class="col-sm-2 control-label">VALUE 6</label>
+          <div id="value6" class="col-sm-10" style="padding-top: 7px"></div>
+        </div>
+
+        <!-- AUTOCOMPLETE 7 -->
+        <div class="form-group">
+          <label class="col-sm-2 control-label">AC 7</label>
+
+          <div class="col-sm-6">
+            <div class="input-group">
+              <span class="input-group-addon">@</span>
+              <div id="ac7"></div>
+              <!--          <input id="ac7"/>-->
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <a href="javascript:" class="btn btn-default" id="ac7Btn">READONLY</a>
+            <a href="javascript:" class="btn btn-default" id="ac7AddBtn">ADD</a>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="col-sm-2 control-label">VALUE 7</label>
+          <div id="value7" class="col-sm-10" style="padding-top: 7px; word-break: break-all;max-height: 80px;overflow: auto;"></div>
+        </div>
+
+        <!-- AUTOCOMPLETE 8 -->
+        <div class="form-group">
+          <label class="col-sm-2 control-label">AC 8</label>
+
+          <div class="col-sm-8">
+            <div class="input-group">
+              <span class="input-group-addon">@</span>
+              <!--          <div id="ac8"></div>-->
+              <input id="ac8"/>
+            </div>
+          </div>
+          <div class="col-sm-2">
+            <a href="javascript:" class="btn btn-default" id="ac8Btn">READONLY</a>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="col-sm-2 control-label">VALUE 8</label>
+          <div id="value8" class="col-sm-10" style="padding-top: 7px; word-break: break-all;max-height: 80px;overflow: auto;"></div>
+        </div>
+
+        <!-- AUTOCOMPLETE 9 -->
+        <div class="form-group">
+          <label class="col-sm-2 control-label">AC 9</label>
+
+          <div class="col-sm-6">
+            <div id="ac9"></div>
+          </div>
+          <div class="col-sm-4">
+            <a href="javascript:" class="btn btn-default" id="ac9Btn">READONLY</a>
+            <a href="javascript:" class="btn btn-default" id="ac9AddBtn">ADD</a>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="col-sm-2 control-label">VALUE 9</label>
+          <div id="value9" class="col-sm-10" style="padding-top: 7px"></div>
+        </div>
+
+        <!-- AUTOCOMPLETE 10 -->
+        <div class="form-group">
+          <label class="col-sm-2 control-label">AC 10</label>
+
+          <div class="col-sm-6">
+            <div id="ac10"></div>
+          </div>
+          <div class="col-sm-4">
+            <a href="javascript:" class="btn btn-default" id="ac10Btn">READONLY</a>
+            <a href="javascript:" class="btn btn-default" id="ac10AddBtn">ADD</a>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="col-sm-2 control-label">VALUE 10</label>
+          <div id="value10" class="col-sm-10" style="padding-top: 7px"></div>
         </div>
       </div>
-      <div class="col-sm-2">
-        <a href="javascript:" class="btn btn-default" id="ac8Btn">READONLY</a>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="col-sm-2 control-label">VALUE 8</label>
-      <div id="value8" class="col-sm-10" style="padding-top: 7px; word-break: break-all"></div>
     </div>
 
   </form>
