@@ -231,6 +231,12 @@ $default-label-color: #777;
 }
 
 .input-group {
+  &.focus.open {
+    .form-control {
+      z-index: 3;
+    }
+  }
+
   .form-control.bs-ac-ct-resize {
     padding: 0;
     position: relative;

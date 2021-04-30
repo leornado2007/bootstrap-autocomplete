@@ -794,7 +794,7 @@
         if (allItemsSame) fire = false;
       }
       if (fire) {
-        if (ac.resizeContainer)
+        if (ac.params.disableResizeContainer !== false && ac.resizeContainer)
           setTimeout(function () { ac.containerEl.height(ac.el.outerHeight()); }, 0);
         ac.params.el.trigger('bs.autocomplete.change', [oldItems, newItems]);
       }
@@ -804,6 +804,12 @@
     // fireOnSelect
     ac.fireOnSelect = function (item, items) {
       ac.params.el.trigger('bs.autocomplete.select', [item, items]);
+    };
+
+    // fireOnClose
+    ac.fireOnClose = function () {
+      if (ac.inputGroupEl) ac.inputGroupEl.removeClass('open');
+      ac.params.el.trigger('bs.autocomplete.close');
     };
 
     // fireOnInit
@@ -816,7 +822,14 @@
 
     // fireOnFocus
     ac.fireOnFocus = function () {
+      if (ac.inputGroupEl) ac.inputGroupEl.addClass('focus');
       ac.params.el.trigger('bs.autocomplete.focus');
+    };
+
+    // fireOnPen
+    ac.fireOnPen = function () {
+      if (ac.inputGroupEl) ac.inputGroupEl.addClass('open');
+      ac.params.el.trigger('bs.autocomplete.open');
     };
 
     // fireBadgeRemoved
@@ -826,6 +839,7 @@
 
     // fireOnBlur
     ac.fireOnBlur = function () {
+      if (ac.inputGroupEl) ac.inputGroupEl.removeClass('focus');
       ac.params.el.trigger('bs.autocomplete.blur');
     };
 
@@ -843,6 +857,7 @@
     ac.close = function () {
       ac.el.removeClass('open');
       ac.panel.close();
+      ac.fireOnClose();
     };
 
     // open
@@ -851,6 +866,7 @@
       ac.panel.resize();
       ac.panel.relocate();
       ac.el.addClass('open');
+      ac.fireOnPen();
     };
 
     // getValue
@@ -1014,7 +1030,7 @@
     ac.data = [], ac.el = $(ac.params.tpls.containerTpl).addClass(ac.params.cls);
 
     // 解决在 input-group 中的样式问题
-    var inputGroupEl = params.el.parents('.input-group'),
+    var inputGroupEl = ac.inputGroupEl = params.el.closest('.input-group'),
       isUnderInputGroup = ac.isUnderInputGroup = inputGroupEl.size() > 0;
 
     var isOriginInputEl = params.el.is(':input');
@@ -1045,7 +1061,7 @@
 
     var bsAcCtEl = ac.containerEl = ac.el.parent(), resizeHeightCls = 'bs-ac-ct-resize';
     if (isUnderInputGroup && bsAcCtEl.hasClass('form-control')) bsAcCtEl.addClass(resizeHeightCls);
-    if (ac.params.disableResizeContainer !== false) ac.resizeContainer = bsAcCtEl.hasClass(resizeHeightCls);
+    ac.resizeContainer = bsAcCtEl.hasClass(resizeHeightCls);
 
     ac.input = new Input(ac);
     ac.panel = new DropdownPanel(ac);
