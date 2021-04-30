@@ -116,7 +116,7 @@
 
   // PlaceHolder
   var PlaceHolder = function (ac) {
-    var placeholder = this, placeholderEl = placeholder.el = $(TPLS.placeholderTpl).prependTo(ac.el);
+    var placeholder = this, placeholderEl = placeholder.el = $(ac.params.tpls.placeholderTpl).prependTo(ac.el);
     placeholderEl.text(ac.params.placeHolder);
 
     placeholder.refresh = function () {
@@ -218,7 +218,7 @@
       var badgeEl, itemName = item.n || item.name, customNameHtml = item.hn || item.htmlName;
       if (ac.params.badgeRender) badgeEl = ac.params.badgeRender.call(ac, item);
       else {
-        badgeEl = $(TPLS.badgeTpl);
+        badgeEl = $(ac.params.tpls.badgeTpl);
         var text = badgeEl.find('.badge-text');
         if (ac.params.itemUseHtml) text.append(ohtml($(customNameHtml || itemName)));
         else text.text(itemName);
@@ -280,7 +280,7 @@
 
   // Input
   var Input = function (ac) {
-    var input = this, inputCt = input.el = $(TPLS.inputTpl).appendTo(ac.el);
+    var input = this, inputCt = input.el = $(ac.params.tpls.inputTpl).appendTo(ac.el);
     var inputSizer = inputCt.children('.input-delegate-sizer');
 
     var loadTimeout;
@@ -502,7 +502,7 @@
 
   // DropdownPanel
   var DropdownPanel = function (ac) {
-    var panel = this, panelEl = panel.el = $(TPLS.dropdownTpl).appendTo(ac.el);
+    var panel = this, panelEl = panel.el = $(ac.params.tpls.dropdownTpl).appendTo(ac.el);
 
     // moveSelect
     panel.moveSelect = function (isUp) {
@@ -560,7 +560,7 @@
             customNameHtml = item.hn || item.htmlName;
           if (ac.params.itemRender) ac.params.itemRender.call(ac, itemEl, item, searchText);
           else {
-            itemEl = $(TPLS.dropdownItemTpl);
+            itemEl = $(ac.params.tpls.dropdownItemTpl);
             var text = itemEl.find('.text');
             if (ac.params.itemUseHtml) text.append(ohtml($(customNameHtml || itemName)));
             else text.text(itemName);
@@ -635,7 +635,7 @@
   // AutoComplete
   var AutoComplete = function (params, originEl) {
     var ac = this;
-    params = params || {};
+    params = $.extend(true, {tpls: TPLS}, params || {});
     for (var def in DEF_OPTS) if (typeof params[def] === 'undefined') params[def] = DEF_OPTS[def];
     ac.params = params, ac.initialized = false, ac.selectedItems = [], ac.readonly = false;
 
@@ -1006,7 +1006,7 @@
       return defered.promise();
     };
 
-    ac.data = [], ac.el = $(TPLS.containerTpl).addClass(ac.params.cls);
+    ac.data = [], ac.el = $(ac.params.tpls.containerTpl).addClass(ac.params.cls);
     if (ac.params.fitWdith !== false) ac.el.addClass('fit-width');
     if (ac.params.dropUp) ac.el.addClass('dropup');
     if (ac.params.replace) {
@@ -1026,7 +1026,7 @@
     }
 
     { // clear btn
-      $(TPLS.clearBtnTpl).appendTo(ac.el).click(function (e) {
+      $(ac.params.tpls.clearBtnTpl).appendTo(ac.el).click(function (e) {
         if (ac.isReadonly()) return;
 
         ac.clearValue();
