@@ -650,6 +650,7 @@
     // resize
     panel.resize = function () {
       panelEl.css('max-width', ac.el.width());
+      ac.fireOnPanelResize(ac);
     };
 
     // relocate
@@ -845,6 +846,11 @@
         ac.params.el.trigger('bs.autocomplete.change', [oldItems, newItems]);
       }
       return fire;
+    };
+
+    // fireOnPanelResize
+    ac.fireOnPanelResize = function () {
+      ac.params.el.trigger('bs.autocomplete.panel.resize', [ac]);
     };
 
     // fireOnSelect
