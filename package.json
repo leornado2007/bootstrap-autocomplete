@@ -1,6 +1,6 @@
 {
   "name": "bootstrap-autocomplete",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "bootstrap jquery autocomplete",
   "main": "dist/js/bootstrap-autocomplete.js",
   "scripts": {},
@@ -32,10 +32,11 @@
     "gulp-sourcemaps": "^2.6.4",
     "gulp-uglify": "^3.0.0",
     "gulp-usemin": "^0.3.29",
-    "pump": "^3.0.0"
-  },
-  "dependencies": {
+    "pump": "^3.0.0",
     "npm": "^6.10.1"
+  },
+  "peerDependencies": {
+    "jquery-throttle-debounce": "^1.0.0"
   },
   "engines": {
     "node": ">=8.11.1"

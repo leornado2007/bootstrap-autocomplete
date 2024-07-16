@@ -15,7 +15,30 @@
     inputSearchDelay: 200,
     forceSelect     : false,
     minChar         : 1,
-    multiple        : true
+    multiple        : true,
+    debounceFn      : function (delay, fn, atBegin) {
+      if ($.debounce) return $.debounce(delay, atBegin, fn);
+      else {
+        var mockDebounceTimeout = -1, lastTimeoutId = -1;
+        return function () {
+          var now = +new Date().getTime();
+          if (mockDebounceTimeout < 0 || (now - mockDebounceTimeout) > delay) {
+            mockDebounceTimeout = now;
+
+            if (lastTimeoutId > 0) {
+              clearTimeout(lastTimeoutId);
+              lastTimeoutId = -1;
+            }
+
+            lastTimeoutId = setTimeout(function () {
+              lastTimeoutId = -1;
+              mockDebounceTimeout = -1;
+              fn();
+            }, delay);
+          }
+        }
+      }
+    }
   };
 
   var isIE = navigator.userAgent.indexOf('Trident') > -1;
@@ -286,9 +309,26 @@
     var input = this, inputCt = input.el = $(ac.params.tpls.inputTpl).appendTo(ac.el);
     var inputSizer = inputCt.children('.input-delegate-sizer');
 
-    var loadTimeout;
-    var inputEl = inputCt.children(':text').on({
-      'focus'  : function (e) {
+    var loadTimeout, compositionFlag;
+    var inputEl = inputCt.children(':text');
+
+    var loadDataOnInput = ac.params.debounceFn(ac.params.inputSearchDelay, function () {
+      if (ac.destoried) return;
+
+      if (inputEl.val().length < ac.params.minChar) {
+        ac.close();
+        ac.panel.el.empty();
+        return;
+      }
+
+      ac.loadData({from: 'keydown'}).then(function () {
+        ac.open();
+        ac.panel.render();
+      });
+    }, true);
+
+    inputEl.on({
+      'focus'           : function (e) {
         if (ac.isReadonly()) {
           inputEl.blur();
           stopEvent(e);
@@ -306,7 +346,7 @@
         }
         ac.fireOnFocus();
       },
-      'blur'   : function () {
+      'blur'            : function () {
         if (!input.isFocused) return;
         input.isFocused = false;
         ac.el.removeClass('focus');
@@ -317,7 +357,7 @@
         ac.close();
         ac.fireOnBlur();
       },
-      'keydown': function (e) {
+      'keydown'         : function (e) {
         if (ac.isReadonly()) return;
 
         input.updateSizer();
@@ -392,24 +432,25 @@
 
         if (!specialKey) {
           if (loadTimeout) clearTimeout(loadTimeout);
-          setTimeout(function () {
-            if (inputEl.val().length < ac.params.minChar) {
-              ac.close();
-              ac.panel.el.empty();
-              return;
-            }
-
-            ac.loadData({from: 'keydown'}).then(function () {
-              ac.open();
-              ac.panel.render();
-            });
-          }, ac.params.inputSearchDelay);
+          loadTimeout = setTimeout(function () { // 由于是监听keydown事件，而最后实际输入的字符要keyup之后才能拿到，所以设置个延迟
+            loadTimeout = undefined;
+            if (!compositionFlag) loadDataOnInput();
+          }, 200);
         }
       },
-      'keyup'  : function (e) {
+      'keyup'           : function (e) {
         if (ac.isReadonly()) return;
         input.updateSizer();
-      }
+      },
+      'compositionstart': function () {
+        compositionFlag = true;
+        // console.log('输入法，录入开始');
+      },
+      'compositionend'  : function () {
+        compositionFlag = false;
+        loadDataOnInput(); //在input之后执行 所以需要手动调用一次
+        // console.log('输入法，输入结束');
+      },
     });
 
     // moveToLR
@@ -818,6 +859,7 @@
 
     // destroy
     ac.destroy = function () {
+      ac.destoried = true;
       ac.panel.destroy();
       $('html').off({'click': htmlClickHandler, 'mouseover': htmlOverHandler});
       $(window).off('resize', htmlResizeHandler);
@@ -1067,6 +1109,7 @@
       if (ac.params.loadData) {
         ac.params.loadData.call(ac, opts.searchText, function (data) {
           if (data) {
+            opts.specialData.splice(0, opts.specialData.length);
             $.each(data, function (i, item) {
               if (isString(item)) item = {c: item, n: item};
               opts.specialData.push(item);
