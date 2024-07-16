@@ -618,7 +618,13 @@
 
           if (isMultiMode) {
             var selectedItem = ac.selectedItemMap[itemCode];
-            if (selectedItem && selectedItem === item) {
+            if (selectedItem &&
+              (
+                selectedItem === item ||
+                (selectedItem.c || selectedItem.code) === itemCode &&
+                (selectedItem.n || selectedItem.name) === itemName
+              )
+            ) {
               itemEl.addClass(CLS.multiSelected);
               if (hideOtherSelected4Multiple) {
                 selectable = false;
