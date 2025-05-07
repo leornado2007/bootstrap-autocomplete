@@ -5,6 +5,7 @@
   var DEF_OPTS = {
     cls             : '',
     placeHolder     : '请选择',
+    emptyListTip    : '未找到匹配的数据项',
     searchMode      : 'code name',
     ignoreCase      : true,
     fitWdith        : true,
@@ -16,6 +17,8 @@
     forceSelect     : false,
     minChar         : 1,
     multiple        : true,
+    mode            : '',
+    hideBadge       : false,
     debounceFn      : function (delay, fn, atBegin) {
       if ($.debounce) return $.debounce(delay, atBegin, fn);
       else {
@@ -51,17 +54,22 @@
   // TPLS
   var TPLS = {
     inputDelegateContainerTpl: '<div class="input-delegate-ct"></div>',
-    containerTpl             : '<div class="btn-group bootstrap-autocomplete form-control"></div>',
+    containerTpl             : '<div class="btn-group bootstrap-autocomplete form-control">\
+        <div class="selected-items-info"></div>\
+      </div>',
     inputTpl                 : '<div class="delegate-input">\
         <input type="text" class="input-delegate">\
         <span class="input-delegate-sizer">W</span>\
       </div>',
     dropdownTpl              : '<ul class="dropdown-menu bs-autocomplete-menu"></ul>',
+    dropdownTopBarTpl        : '<div class="bs-autocomplete-menu-bar"><a class="btn btn-default selrev-btn">反选</a><a class="btn btn-default selall-btn">全选</a></div>',
     placeholderTpl           : '<div class="bs-autocomplete-placeholder"></div>',
     clearBtnTpl              : '<span class="bsautocomplete-icon-cross bsautocomplete-font icon-jiaochacross78"></span>',
+    emptyDropDownItemTpl     : '<li class="bs-autocomplete-empty-item"></li>',
     dropdownItemTpl          : '<li>\
         <a href="javascript:">\
           <span class="text"></span>\
+          <span class="item-status-icon glyphicon glyphicon-ok"></span>\
         </a>\
       </li>',
     badgeTpl                 : '<span class="label label-primary">\
@@ -72,10 +80,22 @@
 
   // CLS
   var CLS = {
-    badgeCt      : 'bs-autocomplete-badge',
-    dropdownItem : 'bs-autocomplete-item',
-    multiSelected: 'multiple-selected',
-    multiHideSel : 'multiple-hide-selected',
+    badgeCt           : 'bs-autocomplete-badge',
+    badgeHide         : 'bs-autocomplete-badge-hide',
+    dropdownItem      : 'bs-autocomplete-item', // 分组optGroup === true项不会添加这个样式
+    multiSelected     : 'multiple-selected',
+    multiHideSel      : 'multiple-hide-selected',
+    itemSelected      : 'selected', // 进作为光标移动当前菜单项高亮用，不作为已选中项样式
+    itemChecked       : 'item-checked', // 已选中菜单项样式
+    clearBtnClass     : 'bs-autocomplete-clear-btn',
+    inputClearBtnClass: 'bs-autocomplete-input-clear-btn',
+    hasInputVal       : 'has-input-val',
+    emptyList         : 'empty-list',
+    modePrefix        : 'bs-autocomplete-mode-',
+  };
+
+  var MODE = {
+    selectOption: 'selectOption',
   };
 
   // escapeRegex
@@ -169,9 +189,61 @@
       }
     };
 
+    // findSelectedBadgeEl
+    badge.findSelectedBadgeEl = function (item) {
+      if (!item) return;
+
+      var foundBadgeEl, codeMatched, nameMatched;
+      var itemName = item.n || item.name, itemCode = item.c || item.code;
+
+      // var editingItem = ac.editingItem && ac.editingItem.item;
+      // if (editingItem === item)
+      // if (!!editingItem) {
+      //   var badgeItemName = editingItem.n || editingItem.name,
+      //     badgeItemCode = editingItem.c || editingItem.code;
+      //
+      // }
+
+      ac.el.children('.' + CLS.badgeCt).each(function () {
+        var badgeEl = $(this);
+        var badgeItem = badgeEl.data('bsAutoCompleteItem');
+        if (!badgeItem) return;
+
+        var badgeItemName = badgeItem.n || badgeItem.name, badgeItemCode = badgeItem.c || badgeItem.code;
+        var isCodeMatch = badgeItemCode === itemCode, isNameMatch = badgeItemName === itemName;
+        if (badgeItem === item) {
+          foundBadgeEl = badgeEl;
+          return false;
+        } else if (isCodeMatch && isNameMatch) {
+          codeMatched = nameMatched = true;
+          foundBadgeEl = badgeEl;
+        }
+      });
+
+      return foundBadgeEl;
+    };
+
     // closeBadge
-    badge.closeBadge = function (badgeEl) {
-      badgeEl.find('.badge-close').click();
+    badge.closeBadge = function (badgeEl, opts) {
+      opts = opts || {};
+
+      if (ac.isReadonly()) return;
+      var item = badgeEl.data('bsAutoCompleteItem');
+      badgeEl.remove();
+      ac.removeSelected(item);
+
+      if (ac.isOpen()) {
+        var itemEl = opts.itemEl || ac.panel.findItemEl(item);
+        if (itemEl) itemEl.removeClass(CLS.itemChecked);
+
+        if (opts.closePanel !== false) {
+          if (ac.selectedItems.length <= 0) ac.input.blur();
+          ac.close();
+        }
+      }
+
+      ac.placeholder.refresh();
+      ac.fireBadgeRemoved();
     };
 
     // getLastBadge
@@ -201,45 +273,53 @@
       return cloestBadgeEl;
     };
 
-    // add
-    badge.add = function (val, speicalData) {
-      var item = ac.panel.getSelectedItem();
-      if (!item) {
-        if (!val) {
-          delete ac.editingItem;
-          return;
-        }
+    // addBadge
+    badge.addBadge = function (val, opts) {
+      opts = opts || {};
+      var speicalData = opts.speicalData;
+      var item;
 
-        if (ac.editingItem) {
-          if (val === ac.editingItem.item) item = val;
-          else if (isString(val)) {
-            if (ac.editingItem.text == val) item = ac.editingItem.item;
-          } else {
-            var ei = ac.editingItem.item, eiCode = ei.c || ei.code, eiName = ei.n || ei.name;
-            var valCode = ei.c || ei.code, valName = ei.n || ei.name;
-            if (valCode == eiCode && valName == eiName) item = val;
-          }
-        }
+      // if (!isString(val) && item && item !== val) {
+      //   var valCode = val.c || val.code, valName = val.n || val.name;
+      //   var itemCode = item.c || item.code, itemName = item.n || item.name;
+      //   if (valCode !== itemCode || valName !== itemName) item = val;
+      // }
 
-        if (!item) {
-          var findItem;
-          if (isString(val)) {
-            findItem = ac.searchInData(val, speicalData);
-            if (!findItem && !ac.params.forceSelect) item = {c: val, n: val};
-          } else {
-            if (ac.params.forceSelect) {
-              findItem = ac.searchInData(val, speicalData);
-              if (findItem) item = findItem;
-            } else item = val;
-          }
-        }
+      if (!val) {
+        delete ac.editingItem;
+        return;
+      }
 
-        if (!item) {
-          delete ac.editingItem;
-          return;
+      if (ac.editingItem) {
+        if (val === ac.editingItem.item) item = val;
+        else if (isString(val)) {
+          if (ac.editingItem.text === val) item = ac.editingItem.item;
+        } else {
+          var ei = ac.editingItem.item, eiCode = ei.c || ei.code, eiName = ei.n || ei.name;
+          var valCode = val.c || val.code, valName = val.n || val.name;
+          if (valCode === eiCode && valName === eiName) item = val;
         }
       }
+
+      if (!item) {
+        if (isString(val)) {
+          item = ac.searchInData(val, speicalData);
+          if (!item && !ac.params.forceSelect) item = {c: val, n: val};
+        } else if (ac.params.forceSelect) {
+          item = ac.searchInData(val, speicalData);
+        } else {
+          item = val;
+        }
+      }
+
+      if (!item) {
+        delete ac.editingItem;
+        return;
+      }
+
       delete ac.editingItem;
+
+      if (item.optGroup === true) return false;
 
       var badgeEl, itemName = item.n || item.name, customNameHtml = item.hn || item.htmlName;
       if (ac.params.badgeRender) badgeEl = ac.params.badgeRender.call(ac, item);
@@ -251,20 +331,16 @@
         text.attr('title', itemName);
       }
 
-      badgeEl.addClass(CLS.badgeCt + ' ' + ac.params.badgeCls).click(function (e) {
-        stopEvent(e);
-      });
+      badgeEl
+        .data('bsAutoCompleteItem', item)
+        .addClass(CLS.badgeCt + ' ' + ac.params.badgeCls)
+        .click(function (e) {
+          stopEvent(e);
+        });
 
       // close handler
       badgeEl.find('.badge-close').click(function (e) {
-        if (ac.isReadonly()) return;
-        badgeEl.remove();
-        ac.removeSelected(item);
-
-        if (ac.selectedItems.length <= 0) ac.input.blur();
-        ac.close();
-        ac.placeholder.refresh();
-        ac.fireBadgeRemoved();
+        badge.closeBadge(badgeEl, {closePanel: !ac.isSelectOptionMode()});
         stopEvent(e);
       });
 
@@ -293,7 +369,7 @@
       if (doAdd) {
         if (ac.isSingleMode()) ac.el.children('.' + CLS.badgeCt).remove();
         ac.input.el.before(badgeEl);
-        ac.addSelected(item, !speicalData);
+        ac.addSelected(item, {fire: !speicalData, itemEl: opts.itemEl});
         badge.resize(badgeEl);
         if (ac.isSingleMode()) ac.input.updateTextValue(itemName, false);
         ac.placeholder.refresh();
@@ -322,6 +398,7 @@
       }
 
       ac.loadData({from: 'keydown'}).then(function () {
+        if (!ac.input.isFocused) return;
         ac.open();
         ac.panel.render();
       });
@@ -337,7 +414,7 @@
 
         input.isFocused = true;
         input.updateSizer();
-        ac.placeholder.el.hide();
+        if (!ac.params.hideBadge) ac.placeholder.el.hide();
         ac.el.addClass('focus');
         if (ac.params.minChar <= 0 || inputEl.val().length >= ac.params.minChar) ac.openOnFocus();
         if (ac.isSingleMode() && ac.getValue().length > 0) {
@@ -346,16 +423,29 @@
         }
         ac.fireOnFocus();
       },
-      'blur'            : function () {
+      'blur'            : function (e) {
         if (!input.isFocused) return;
         input.isFocused = false;
         ac.el.removeClass('focus');
 
-        if (inputEl.val() && !input.beforeMoveVal || !inputEl.val() && ac.isSingleMode())
-          input.confirmValue(false, true);
+        var preventBlur = false;
+        if (ac.isSelectOptionMode()) { // 下拉框模式，阻止点击关闭badge时失去焦点
+          var relatedTarget = e.relatedTarget;
+          if (relatedTarget) {
+            var blurByCloseBadgeEl = $(relatedTarget).closest('.badge-close');
+            if (blurByCloseBadgeEl.length > 0)
+              preventBlur = true;
+          }
+        }
+
+        if (!preventBlur && inputEl.val() && !input.beforeMoveVal || !inputEl.val() && ac.isSingleMode())
+          input.confirmValue(false, {fromBlur: true});
         ac.placeholder.refresh();
-        ac.close();
-        ac.fireOnBlur();
+
+        if (!preventBlur) {
+          ac.close();
+          ac.fireOnBlur();
+        }
       },
       'keydown'         : function (e) {
         if (ac.isReadonly()) return;
@@ -365,13 +455,31 @@
         var specialKey = false;
         switch (e.keyCode) {
           case KEY_CODES.ENTER:
-            var item = ac.panel.getSelectedItem();
-            if (item) {
-              var itemName = item.n || item.name, itemCode = item.c || item.code;
-              if (ac.isInSearchMode('name') && itemName) inputEl.val(itemName);
-              else if (itemCode) inputEl.val(itemCode);
+            // 防止用户输入自定义字符串后回车，此时自定义字符串的字典加载请求还在debounce或者异步请求中
+            // 回车操作后应该关闭组件面板，但因为上述异步行为可能导致面板再次展示出来
+            if (loadTimeout) {
+              clearTimeout(loadTimeout);
+              loadTimeout = undefined;
             }
-            input.blur();
+
+            var itemEl = ac.panel.getSelectedItemEl();
+            var item = itemEl.data('bsAutoCompleteItem');
+
+            if (item) {
+              // var itemName = item.n || item.name, itemCode = item.c || item.code;
+              // if (ac.isInSearchMode('name') && itemName) inputEl.val(itemName);
+              // else if (itemCode) inputEl.val(itemCode);
+
+              var badgeEl = ac.isSelected(item) && ac.badge.findSelectedBadgeEl(item);
+              if (!!badgeEl) ac.badge.closeBadge(badgeEl, {closePanel: !ac.isSelectOptionMode(), itemEl: itemEl});
+              else ac.badge.addBadge(item, {itemEl: itemEl});
+            }
+
+            if (!ac.isSelectOptionMode()) input.blur();
+            else if (!item && inputEl.val() && !input.beforeMoveVal || !inputEl.val() && ac.isSingleMode()) {
+              input.confirmValue(false, {fromBlur: false});
+            }
+
             stopEvent(e);
             specialKey = true;
             break;
@@ -391,10 +499,10 @@
           case KEY_CODES.LEFT:
           case KEY_CODES.RIGHT:
             var caretPos = getCaretPosition(inputEl[0]), textLen = inputEl.val().length;
-            if (e.keyCode == KEY_CODES.LEFT && caretPos == 0) {
+            if (e.keyCode === KEY_CODES.LEFT && caretPos === 0) {
               input.moveToLR(true);
               stopEvent(e);
-            } else if (e.keyCode == KEY_CODES.RIGHT && caretPos == textLen) {
+            } else if (e.keyCode === KEY_CODES.RIGHT && caretPos === textLen) {
               input.moveToLR(false);
               stopEvent(e);
             }
@@ -402,7 +510,7 @@
             break;
           case KEY_CODES.UP:
           case KEY_CODES.DOWN:
-            ac.panel.moveSelect(e.keyCode == KEY_CODES.UP);
+            ac.panel.moveSelect(e.keyCode === KEY_CODES.UP);
             stopEvent(e);
             specialKey = true;
             break;
@@ -441,6 +549,9 @@
       'keyup'           : function (e) {
         if (ac.isReadonly()) return;
         input.updateSizer();
+        var text = inputEl.val();
+        if (!!text) inputCt.addClass(CLS.hasInputVal);
+        else inputCt.removeClass(CLS.hasInputVal);
       },
       'compositionstart': function () {
         compositionFlag = true;
@@ -492,12 +603,13 @@
     };
 
     // confirmValue
-    input.confirmValue = function (isEsc, fromBlur) {
+    input.confirmValue = function (isEsc, opts) {
+      opts = opts || {};
       var added;
 
       if (isEsc) {
-        if (ac.editingItem) added = ac.badge.add(ac.editingItem.item);
-      } else added = ac.badge.add(inputEl.val());
+        if (ac.editingItem) added = ac.badge.addBadge(ac.editingItem.item);
+      } else added = ac.badge.addBadge(inputEl.val());
 
       //if (isIE && ac.isSingleMode() && fromBlur) {
       //  ac.close();
@@ -509,9 +621,11 @@
           if (ac.selectedItems.length > 0) ac.removeSelected(ac.selectedItems[0]);
           if (inputEl.val()) input.clear();
         }
-        if (!fromBlur) inputEl.blur();
+        if (!opts.fromBlur) inputEl.blur();
         ac.close();
-      } else if (inputEl.val()) input.clear();
+      } else if (inputEl.val()) {
+        input.clear();
+      }
     };
 
     // blur
@@ -526,6 +640,7 @@
       if (fireBlur === false) ac.placeholder.refresh();
       else inputEl.blur();
       inputSizer.text('W');
+      inputCt.removeClass(CLS.hasInputVal);
     };
 
     // getSearchText
@@ -542,15 +657,73 @@
     inputSizer.text('WW');
     input.emptyWidth = getOuterWidth(inputCt);
     inputSizer.text('W');
+
+    // hideBadge模式下，搜索框清理按钮
+    if (ac.params.hideBadge) {
+      $(ac.params.tpls.clearBtnTpl)
+        .addClass(CLS.inputClearBtnClass)
+        .appendTo(inputCt)
+        .mousedown(function (e) {
+          if (ac.isReadonly()) return;
+
+          ac.input.clear(false);
+          ac.loadData().then(function () {
+            ac.panel.render();
+          });
+          stopEvent(e);
+        });
+    }
   };
 
   // DropdownPanel
   var DropdownPanel = function (ac) {
     var panel = this, panelEl = panel.el = $(ac.params.tpls.dropdownTpl).appendTo(ac.el);
+    var emptyItemEl = $(ac.params.tpls.emptyDropDownItemTpl).text(ac.params.emptyListTip);
+
+    panelEl.on('mousewheel', function (e) {
+      if (e.currentTarget !== panelEl[0]) return;
+
+      var scrollTop = panelEl.scrollTop();
+      var innerHeight = panelEl.innerHeight();
+      var scrollHeight = panelEl[0].scrollHeight;
+      var delta = (e.originalEvent.wheelDelta && (e.originalEvent.wheelDelta > 0 ? 1 : -1)) ||
+        (e.originalEvent.detail && (e.originalEvent.detail > 0 ? -1 : 1));
+
+      if (scrollTop <= 0 && delta > 0 || // 到达顶部
+        scrollTop + innerHeight >= scrollHeight - 1 && delta < 0) { // 到达底部
+        stopEvent(e);
+      }
+    });
+
+    // findItemEl
+    panel.findItemEl = function (item) {
+      if (!item) return;
+
+      var foundItemEl;
+      var itemName = item.n || item.name, itemCode = item.c || item.code
+      var checkedItemEls = panelEl.children('li.' + CLS.dropdownItem + '.' + CLS.itemChecked);
+      $.each(checkedItemEls, function (i, itemEl) {
+        var $itemEl = $(itemEl);
+        var boundItem = $itemEl.data('bsAutoCompleteItem');
+        if (!boundItem) return;
+
+        if (boundItem === item) {
+          foundItemEl = $itemEl;
+          return false
+        }
+
+        var boundItemName = boundItem.n || boundItem.name, boundItemCode = boundItem.c || boundItem.code;
+        if (boundItemName === itemName && boundItemCode === itemCode) {
+          foundItemEl = $itemEl;
+        }
+      });
+      return foundItemEl;
+    };
 
     // moveSelect
     panel.moveSelect = function (isUp) {
-      var selItem = panelEl.children('li.selected'), moveToItem, itemCls = '.' + CLS.dropdownItem;
+      var selItem = panelEl.children('li.' + CLS.dropdownItem + '.' + CLS.itemSelected), moveToItem,
+        itemCls = '.' + CLS.dropdownItem;
       var skipMultiSel = !ac.isSingleMode() && ac.params.hideOtherSelected4Multiple;
       if (skipMultiSel) itemCls += ':not(.' + CLS.multiHideSel + ')';
       if (selItem.size() > 0) {
@@ -572,15 +745,15 @@
       }
 
       if (moveToItem && moveToItem.length > 0) {
-        selItem.removeClass('selected');
-        moveToItem.addClass('selected');
+        selItem.removeClass(CLS.itemSelected);
+        moveToItem.addClass(CLS.itemSelected);
         panel.scrollToSelected(moveToItem);
       }
     };
 
     // scrollToSelected
     panel.scrollToSelected = function (selectedItem) {
-      selectedItem = selectedItem || panelEl.children('li.selected');
+      selectedItem = selectedItem || panelEl.children('li.' + CLS.dropdownItem + '.' + CLS.itemSelected);
       if (selectedItem.size() > 0) {
         var scrollTop = panelEl.scrollTop(), top = selectedItem.position().top + scrollTop;
         top = top - (panelEl.height() - selectedItem.height()) / 2;
@@ -588,9 +761,38 @@
       }
     };
 
-    // getSelectedItem
-    panel.getSelectedItem = function () {
-      return panelEl.children('li.selected').data('bsAutoCompleteItem');
+    // getSelectedItemEl
+    panel.getSelectedItemEl = function () {
+      return panelEl.children('li.' + CLS.dropdownItem + '.' + CLS.itemSelected);
+    };
+
+    // initMenuBar
+    panel.initMenuBar = function () {
+      var menuBarEl = $(ac.params.tpls.dropdownTopBarTpl);
+      menuBarEl.find('.selrev-btn').mousedown(function (e) {
+        panelEl.children('.' + CLS.dropdownItem).each(function (i, itemEl) {
+          var $itemEl = $(itemEl);
+          var item = $itemEl.data('bsAutoCompleteItem');
+          if (!item) return;
+
+          var badgeEl = ac.isSelected(item) && ac.badge.findSelectedBadgeEl(item);
+          if (!!badgeEl) ac.badge.closeBadge(badgeEl, {closePanel: !ac.isSelectOptionMode(), itemEl: $itemEl});
+          else ac.badge.addBadge(item, {itemEl: $itemEl});
+        });
+        stopEvent(e);
+      });
+      menuBarEl.find('.selall-btn').mousedown(function (e) {
+        panelEl.children('.' + CLS.dropdownItem).each(function (i, itemEl) {
+          var $itemEl = $(itemEl);
+          var item = $itemEl.data('bsAutoCompleteItem');
+          if (!item) return;
+
+          var badgeEl = ac.isSelected(item) && ac.badge.findSelectedBadgeEl(item);
+          if (!badgeEl) ac.badge.addBadge(item, {itemEl: $itemEl});
+        });
+        stopEvent(e);
+      });
+      return menuBarEl;
     };
 
     // render
@@ -605,6 +807,15 @@
         var isMultiMode = !ac.isSingleMode(), hideOtherSelected4Multiple = ac.params.hideOtherSelected4Multiple;
         var lastGroupEl, lastGroupChildCount = 0, selectableItemCount = 0;
 
+        panelEl.removeClass(CLS.emptyList);
+        if (ac.isSelectOptionMode() && !ac.isSingleMode()) {
+          var menuBarEl = panel.initMenuBar();
+          ac.el.addClass(CLS.modePrefix + MODE.selectOption.toLowerCase());
+          panelEl.append(menuBarEl);
+        } else {
+          ac.el.removeClass(CLS.modePrefix + MODE.selectOption.toLowerCase());
+        }
+
         $.each(data, function (i, item) {
           var itemEl, itemName = item.n || item.name, itemCode = item.c || item.code,
             customNameHtml = item.hn || item.htmlName, selectable = true;
@@ -616,21 +827,23 @@
             else text.text(itemName);
           }
 
-          if (isMultiMode) {
-            var selectedItem = ac.selectedItemMap[itemCode];
-            if (selectedItem &&
-              (
-                selectedItem === item ||
-                (selectedItem.c || selectedItem.code) === itemCode &&
-                (selectedItem.n || selectedItem.name) === itemName
-              )
-            ) {
+          var selectedItem = ac.selectedItemMap[itemCode];
+          var itemChecked = selectedItem && (
+            selectedItem === item ||
+            (selectedItem.c || selectedItem.code) === itemCode &&
+            (selectedItem.n || selectedItem.name) === itemName);
+
+          if (itemChecked) {
+            itemEl.addClass(CLS.itemChecked);
+            if (isMultiMode) {
               itemEl.addClass(CLS.multiSelected);
               if (hideOtherSelected4Multiple) {
                 selectable = false;
                 itemEl.addClass(CLS.multiHideSel);
               }
             }
+          } else {
+            itemEl.removeClass(CLS.itemChecked);
           }
 
           if (item.optGroup === true) {
@@ -653,7 +866,9 @@
           }
           if (item.cls) itemEl.addClass(item.cls);
 
-          itemEl.data('bsAutoCompleteItem', item).appendTo(panelEl)
+          itemEl
+            .appendTo(panelEl)
+            .data('bsAutoCompleteItem', item)
             .attr('title', itemName)
             .mousedown(function (e) {
               if (ac.isReadonly()) return;
@@ -662,9 +877,31 @@
                 return;
               }
 
-              if (isIE) ac.input.blur();
-              ac.input.clear();
-              ac.badge.add(item);
+              var doAdd = true;
+              if (!ac.isSelectOptionMode()) {
+                if (isIE) ac.input.blur();
+                ac.input.clear();
+              } else {
+                if (ac.editingItem && ac.editingItem.item === item) {
+                  delete ac.editingItem;
+                  ac.removeSelected(item);
+
+                  if (ac.selectedItems.length <= 0) ac.input.blur();
+                  ac.placeholder.refresh();
+                  ac.fireBadgeRemoved();
+
+                  doAdd = false;
+                }
+
+                var badgeEl = ac.badge.findSelectedBadgeEl(item);
+                if (!!badgeEl) {
+                  ac.badge.closeBadge(badgeEl, {closePanel: false, itemEl: itemEl});
+                  doAdd = false;
+                }
+              }
+
+              if (doAdd) ac.badge.addBadge(item, {itemEl: itemEl});
+
               stopEvent(e);
             });
 
@@ -678,7 +915,7 @@
             } else if (ac.isInSearchMode('code') && searchText == itemCode) {
               matched = true;
             }
-            if (matched) itemEl.addClass('selected');
+            if (matched) itemEl.addClass(CLS.itemSelected);
           }
         });
 
@@ -690,26 +927,35 @@
         } else {
           panelEl.removeClass('no-selectable-items');
         }
-
-      } else ac.close();
+      } else {
+        panelEl.addClass(CLS.emptyList).append(emptyItemEl);
+        if (!ac.isSelectOptionMode()) ac.close();
+      }
     };
 
     // resize
     panel.resize = function () {
-      panelEl.css('max-width', ac.el.width());
+      var width = ac.el.outerWidth();
+      panelEl.css('max-width', width);
+      if (ac.isSelectOptionMode()) panelEl.width(width);
+      if (ac.params.hideBadge) {
+        ac.input.el.width(width).css('max-width', width);
+      }
       ac.fireOnPanelResize(ac);
     };
 
     // relocate
     panel.relocate = function () {
       var inputPosLeft = ac.input.el.position().left;
-      if (ac.isSingleMode()) inputPosLeft = 0;
+      if (ac.isSingleMode() || ac.isSelectOptionMode()) inputPosLeft = 0;
       panelEl.css('left', inputPosLeft + 'px');
     };
 
     // close
     panel.close = function () {
-      panelEl.children().removeClass('selected');
+      panelEl.children('.' + CLS.dropdownItem)
+        .removeClass(CLS.itemSelected)
+        .removeClass(CLS.itemChecked);
     };
 
     // destroy
@@ -794,7 +1040,7 @@
       if (ac.params.forceSelect && ac.params.loadDataItems) {
         ac.loadDataItems(items).then(function (tmpData) {
           $.each(items, function (i, item) {
-            ac.badge.add(item, tmpData);
+            ac.badge.addBadge(item, {specialData: tmpData});
           });
         }).always(function () {
           opts.fireInit ? ac.fireOnInit() : changeFired = ac.fireOnChange(oldSelectedItems, ac.getValue());
@@ -807,7 +1053,7 @@
         $.each(items, function (i, item) {
           if (needCheckRemote) {
             if (ac.searchInData(item, lastSearchData)) {
-              ac.badge.add(item);
+              ac.badge.addBadge(item);
               checkedItemCount++;
             } else {
               var itemCode = item.c || item.code, itemName = item.n || item.name;
@@ -821,7 +1067,7 @@
                 from                      : 'addValue'
               }).then(function (tmpData) {
                 lastSearchData = tmpData;
-                ac.badge.add(item, tmpData);
+                ac.badge.addBadge(item, {specialData: tmpData});
               }).always(function () {
                 if (++checkedItemCount == toCheckCount) {
                   opts.fireInit ? ac.fireOnInit() : changeFired = ac.fireOnChange(oldSelectedItems, ac.getValue());
@@ -829,7 +1075,7 @@
                 }
               });
             }
-          } else ac.badge.add(item);
+          } else ac.badge.addBadge(item);
         });
         if (!needCheckRemote) {
           opts.fireInit ? ac.fireOnInit() : changeFired = ac.fireOnChange(oldSelectedItems, ac.getValue());
@@ -948,9 +1194,14 @@
       ac.params.el.trigger('bs.autocomplete.deselect', [item, items]);
     };
 
-    // is
+    // isSingleMode
     ac.isSingleMode = function () {
       return !ac.params.multiple;
+    };
+
+    // isSelectOptionMode
+    ac.isSelectOptionMode = function () {
+      return ac.params.mode === MODE.selectOption;
     };
 
     // close
@@ -958,6 +1209,7 @@
       ac.el.removeClass('open');
       ac.panel.close();
       ac.fireOnClose();
+      ac.closeTime = new Date().getTime();
     };
 
     // open
@@ -967,6 +1219,11 @@
       ac.panel.relocate();
       ac.el.addClass('open');
       ac.fireOnPen();
+    };
+
+    // isOpen
+    ac.isOpen = function () {
+      return ac.el.hasClass('open');
     };
 
     // getValue
@@ -987,7 +1244,8 @@
       ac.selectedItems.splice(0, ac.selectedItems.length);
       ac.selectedItemMap = {};
       ac.el.children('.' + CLS.badgeCt).remove();
-      ac.el.removeClass('selected');
+      ac.el.removeClass(CLS.itemSelected);
+      if (ac.params.hideBadge) ac.renderSelectedItemsInfo();
       ac.placeholder.refresh();
       if (fire !== false) {
         ac.params.el.trigger('bs.autocomplete.clear');
@@ -1009,7 +1267,8 @@
     };
 
     // addSelected
-    ac.addSelected = function (item, fire) {
+    ac.addSelected = function (item, opts) {
+      opts = opts || {};
       var oldSelectedItems = ac.selectedItems.slice();
 
       if (ac.isSingleMode()) {
@@ -1019,12 +1278,24 @@
 
       ac.selectedItems.push(item);
       ac.selectedItemMap[item.c || item.code] = item;
-      if (ac.selectedItems.length > 0) ac.el.addClass('selected');
+      if (ac.selectedItems.length > 0) ac.el.addClass(CLS.itemSelected);
 
-      if (fire !== false) {
+      if (ac.isOpen()) {
+        var itemEl = opts.itemEl || ac.panel.findItemEl(item);
+        if (itemEl) itemEl.addClass(CLS.itemChecked);
+      }
+
+      if (ac.params.hideBadge) ac.renderSelectedItemsInfo();
+
+      if (opts.fire !== false) {
         ac.fireOnSelect(item, ac.getValue());
         ac.fireOnChange(oldSelectedItems, ac.getValue());
       }
+    };
+
+    // isSelected
+    ac.isSelected = function (item) {
+      return item && ac.selectedItemMap[item.c || item.code];
     };
 
     // removeSelected
@@ -1034,11 +1305,28 @@
         var oldSelectedItems = ac.selectedItems.slice();
         ac.selectedItems.splice(findIndex, 1);
         delete ac.selectedItemMap[item.c || item.code];
-        if (ac.selectedItems.length <= 0) ac.el.removeClass('selected');
+        if (ac.selectedItems.length <= 0) ac.el.removeClass(CLS.itemSelected);
+
+        if (ac.params.hideBadge) ac.renderSelectedItemsInfo();
 
         ac.fireOnDeSelect(item, ac.getValue());
         ac.fireOnChange(oldSelectedItems, ac.getValue());
       }
+    };
+
+    ac.renderSelectedItemsInfo = function () {
+      var selectedItems = ac.selectedItems || [];
+      var itemNames = [];
+      $.each(selectedItems, function (i, item) {
+        itemNames.push(item.n || item.name);
+      });
+
+      var selectedItemsInfoEl = ac.el.children('.selected-items-info');
+      // var maxWidth = getInnerWidth(ac.el) - ac.input.emptyWidth - 2;
+      selectedItemsInfoEl
+        // .css({maxWidth: maxWidth})
+        .text(itemNames.join(','));
+      ac.placeholder.refresh();
     };
 
     // isItemMatched
@@ -1055,7 +1343,7 @@
       var result = -1, itemCode = item.c || item.code, itemName = item.n || item.name;
       $.each(ac.selectedItems, function (i, selItem) {
         var selCode = selItem.c || selItem.code, selName = selItem.n || selItem.name;
-        if (selCode == itemCode && selName == itemName) {
+        if (selCode === itemCode && selName === itemName) {
           result = i;
           return false;
         }
@@ -1105,7 +1393,9 @@
     };
 
     // loadData
+    ac.loadDataSeq = 0;
     ac.loadData = function (opts) {
+      var loadSeq = ac.loadDataSeq++;
       opts = opts || {};
       opts.searchText = opts.showAllItemsWhenFirstFocus ? '' : (opts.searchText || ac.input.getSearchText());
       var defered = $.Deferred();
@@ -1113,7 +1403,11 @@
       opts.specialData = opts.specialData || ac.data;
       opts.specialData.splice(0, opts.specialData.length);
       if (ac.params.loadData) {
-        ac.params.loadData.call(ac, opts.searchText, function (data) {
+        ac.params.loadData.call(ac, opts.searchText, function (data, _loadSeq) {
+          // 通过seq跳过队列前端的异步响应
+          var nLoadSeq = Number(_loadSeq);
+          if (!isNaN(_loadSeq) && (_loadSeq + '' === nLoadSeq + '') && _loadSeq !== ac.loadDataSeq - 1) return;
+
           if (data) {
             opts.specialData.splice(0, opts.specialData.length);
             $.each(data, function (i, item) {
@@ -1122,7 +1416,7 @@
             });
             defered.resolve(opts.specialData);
           } else defered.reject();
-        }, opts.searchMode, opts.from);
+        }, opts.searchMode, opts.from, loadSeq);
       } else {
         var data = ac.params.data || [], lastGroupItem;
         $.each(data, function (i, item) {
@@ -1192,12 +1486,14 @@
     }
 
     { // clear btn
-      $(ac.params.tpls.clearBtnTpl).appendTo(ac.el).click(function (e) {
-        if (ac.isReadonly()) return;
+      $(ac.params.tpls.clearBtnTpl)[ac.params.hideBadge ? 'prependTo' : 'appendTo'](ac.el)
+        .addClass(CLS.clearBtnClass)
+        .click(function (e) {
+          if (ac.isReadonly()) return;
 
-        ac.clearValue();
-        stopEvent(e);
-      });
+          ac.clearValue();
+          stopEvent(e);
+        });
     }
 
     if (ac.params.readonly) ac.setReadonly(true);
@@ -1215,11 +1511,18 @@
       },
       click    : function (e) {
         if (ac.isReadonly()) return;
+        if (ac.params.hideBadge) ac.el.addClass('focus');
         ac.input.focus();
         if (ac.input.isFocused) stopEvent(e);
       },
       mouseover: elOverHandler
     });
+
+    if (ac.params.hideBadge) {
+      ac.el.addClass(CLS.badgeHide);
+    } else {
+      ac.el.removeClass(CLS.badgeHide);
+    }
 
     originEl.data("bsAutoComplete", this);
     if (ac.params.value) ac.setValue(ac.params.value, {fireInit: true});

@@ -2,14 +2,14 @@ $(function () {
 
   var printEvent = false;
   var mails = '126.com,163.com,gmail.com,sina.com,hotmail.com,qq.com,yahoo.com'.split(',').sort();
-  var emailLoader = function (searchText, callback, searchMode, from) {
+  var emailLoader = function (searchText, callback, searchMode, from, loadSeq) {
     if (from) console.log('from:', from);
     setTimeout(function () {
       var data = [];
       $.each(mails, function (i, domain) {
         data.push(searchText + '@' + domain);
       });
-      callback(data);
+      callback(data, loadSeq);
     }, 500);
   };
   var emailItemsLoader = function (items, callback) {
@@ -186,14 +186,14 @@ $(function () {
   });
 
   // ac9
-  var emailLoaderWzSearchMode = function (searchText, callback, searchMode, from) {
+  var emailLoaderWzSearchMode = function (searchText, callback, searchMode, from, loadSeq) {
     if (from) console.log('from:', from);
     var data = [];
     if (!!searchMode) data.push({c: 'searchMode-test', n: '搜索模式测试'});
     $.each(mails, function (i, domain) {
       data.push(searchText + '@' + domain);
     });
-    callback(data);
+    callback(data, loadSeq);
   };
   $('#ac9').on($.extend(getListeners('ac9', 'value9'), {})).bsAutoComplete({
     minChar : 0, data: data2, filtSame: true, forceSelect: true,
@@ -227,6 +227,52 @@ $(function () {
   $('#ac10AddBtn').click(function () {
     var ac10 = $('#ac10').data('bsAutoComplete');
     ac10.addValue([{c: 'code-12', n: '项目-12'}], onSetFinish('addValue', 'ac10'));
+  });
+
+  // ac11
+  var data11 = [];
+  for (var i = 0; i < 100; i++) {
+    if (i % 4 != 0 && i != 1 && i != 10) continue;
+    // if (i % 4 != 0 && i != 1 && i % 10 != 0) continue;
+    data11.push({code: 'code-' + i, name: '项目-' + i, optGroup: i % 4 === 0, cls: 'custom-cls'});
+  }
+  $('#ac11').on($.extend(getListeners('ac11', 'value11'), {})).bsAutoComplete({
+    minChar: 0, data: data11, filtSame: true, hideOtherSelected4Multiple: false
+  });
+
+  $('#ac11Btn').click(function () {
+    var ac11 = $('#ac11').data('bsAutoComplete');
+    ac11.setReadonly(!ac11.isReadonly());
+  });
+  $('#ac11AddBtn').click(function () {
+    var ac11 = $('#ac11').data('bsAutoComplete');
+    ac11.addValue([{c: 'code-12', n: '项目-12'}], onSetFinish('addValue', 'ac11'));
+  });
+
+  $.each(['12', '13'], function (i, acSeq) {
+    // ac12, ac13
+    $('#ac' + acSeq)
+      .on($.extend(getListeners('ac' + acSeq, 'value' + acSeq), {}))
+      .bsAutoComplete({
+        minChar              : 0,
+        data                 : data2,
+        // loadData             : emailLoader,
+        filtSame             : true,
+        closeOnSelect        : false,
+        forceSelect          : false,
+        dropDownFollowInputEl: false,
+        hideBadge            : acSeq === '13',
+        mode                 : 'selectOption',
+      });
+
+    $('#ac' + acSeq + 'Btn').click(function () {
+      var ac = $('#ac' + acSeq).data('bsAutoComplete');
+      ac.setReadonly(!ac.isReadonly());
+    });
+    $('#ac' + acSeq + 'AddBtn').click(function () {
+      var ac = $('#ac' + acSeq).data('bsAutoComplete');
+      ac.addValue([{c: 'code-13', n: '项目-13'}], onSetFinish('addValue', 'ac' + acSeq));
+    });
   });
 
 });

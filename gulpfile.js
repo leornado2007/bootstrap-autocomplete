@@ -32,7 +32,7 @@ var sassTask = function (usemin) {
 };
 
 var jsTask = function (usemin, path) {
-  var tasks = [gulp.src(path || paths.js.src), sourcemaps.init(), uglify({ie8: true}),
+  var tasks = [gulp.src(path || paths.js.src), sourcemaps.init(), /*uglify({ie8: true}),*/
     rename({suffix: '.min'}), sourcemaps.write('./')];
   return usemin ? tasks : tasks.concat([gulp.dest(siteDir), connect.reload()]);
 };
