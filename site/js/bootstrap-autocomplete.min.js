@@ -509,6 +509,8 @@
       });
 
       var text = itemNames.join(',');
+      var maxW = ac.el.width() - 5;
+      if (maxW > 0) selectedItemsInfoEl.css('max-width', maxW);
       selectedItemsTextEl.text(text).attr('title', text);
       ac.placeholder.refresh();
     };
