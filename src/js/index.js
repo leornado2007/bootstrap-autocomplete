@@ -254,15 +254,17 @@ $(function () {
     $('#ac' + acSeq)
       .on($.extend(getListeners('ac' + acSeq, 'value' + acSeq), {}))
       .bsAutoComplete({
-        minChar              : 0,
-        data                 : data2,
+        minChar : 0,
+        data    : data2,
+        // multiple: false,
         // loadData             : emailLoader,
-        filtSame             : true,
-        closeOnSelect        : false,
-        forceSelect          : false,
-        dropDownFollowInputEl: false,
-        hideBadge            : acSeq === '13',
-        mode                 : 'selectOption',
+        filtSame                           : true,
+        closeOnSelect                      : false,
+        forceSelect                        : false,
+        dropDownFollowInputEl              : false,
+        hideBadge                          : acSeq === '13',
+        disableSelectedItemsInfoDragAnmiate: false,
+        mode                               : 'selectOption',
       });
 
     $('#ac' + acSeq + 'Btn').click(function () {
