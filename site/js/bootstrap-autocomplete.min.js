@@ -267,7 +267,12 @@
       if (ac.isReadonly()) return;
       var item = badgeEl.data('bsAutoCompleteItem');
       badgeEl.remove();
-      ac.removeSelected(item);
+
+      ac.removeSelected(item, {
+        needFireOnDeSelect   : opts.needFireOnDeSelect,
+        needFireOnChange     : opts.needFireOnChange,
+        innerOnRemoveSelected: opts.innerOnRemoveSelected,
+      });
 
       if (ac.isOpen()) {
         var itemEl = opts.itemEl || ac.panel.findItemEl(item);
@@ -280,7 +285,12 @@
       }
 
       ac.placeholder.refresh();
-      ac.fireBadgeRemoved();
+      ac.fireBadgeRemoved({
+        needFireBadgeRemoved : opts.needFireBadgeRemoved,
+        innerFireBadgeRemoved: opts.innerFireBadgeRemoved,
+        item                 : item,
+        badgeEl              : badgeEl
+      });
     };
 
     // getLastBadge
@@ -313,7 +323,7 @@
     // addBadge
     badge.addBadge = function (val, opts) {
       opts = opts || {};
-      var speicalData = opts.speicalData;
+      var specialData = opts.specialData;
       var item;
 
       /*if (!isString(val) && item && item !== val) {
@@ -340,10 +350,10 @@
 
       if (!item) {
         if (isString(val)) {
-          item = ac.searchInData(val, speicalData);
+          item = ac.searchInData(val, specialData);
           if (!item && !ac.params.forceSelect) item = {c: val, n: val};
         } else if (ac.params.forceSelect) {
-          item = ac.searchInData(val, speicalData);
+          item = ac.searchInData(val, specialData);
         } else {
           item = val;
         }
@@ -382,7 +392,13 @@
       if (doAdd) {
         if (ac.isSingleMode()) ac.el.children('.' + CLS.badgeCt).remove();
         ac.input.el.before(badgeEl);
-        ac.addSelected(item, {fire: !speicalData, itemEl: opts.itemEl});
+        ac.addSelected(item, {
+          fire              : !specialData,
+          needFireOnSelect  : opts.needFireOnSelect,
+          needFireOnChange  : opts.needFireOnChange,
+          innerOnAddSelected: opts.innerOnAddSelected,
+          itemEl            : opts.itemEl,
+        });
         badge.resize(badgeEl);
         if (ac.isSingleMode()) ac.input.updateTextValue(itemName, false);
         ac.placeholder.refresh();
@@ -826,26 +842,76 @@
 
     $(panel.el)
       .on('mousedown', '.selrev-btn', function (e) {
+        var needBatchFireSelectItems = [], needBatchFireDeSelectItems = [];
+        var oldSelectedItems = ac.selectedItems.slice();
+
         panel.el.children('.' + CLS.dropdownItem).each(function (i, itemEl) {
           var $itemEl = $(itemEl);
           var item = $itemEl.data('bsAutoCompleteItem');
           if (!item) return;
 
           var badgeEl = ac.isSelected(item) && ac.badge.findSelectedBadgeEl(item);
-          if (!!badgeEl) ac.badge.closeBadge(badgeEl, {closePanel: !ac.isSelectOptionMode(), itemEl: $itemEl});
-          else ac.badge.addBadge(item, {itemEl: $itemEl});
+          if (!!badgeEl) {
+            ac.badge.closeBadge(badgeEl, {
+              closePanel           : !ac.isSelectOptionMode(),
+              itemEl               : $itemEl,
+              needFireOnDeSelect   : false,
+              needFireOnChange     : false,
+              needFireBadgeRemoved : false,
+              innerOnRemoveSelected: function (item) {
+                needBatchFireDeSelectItems.push(item);
+              },
+            });
+          } else {
+            ac.badge.addBadge(item, {
+              itemEl            : $itemEl,
+              needFireOnSelect  : false,
+              needFireOnChange  : false,
+              innerOnAddSelected: function (item) {
+                needBatchFireSelectItems.push(item);
+              }
+            });
+          }
         });
+
+        if (needBatchFireSelectItems.length > 0)
+          ac.fireOnSelect(needBatchFireSelectItems, ac.getValue());
+        if (needBatchFireDeSelectItems.length > 0)
+          ac.fireOnDeSelect(needBatchFireDeSelectItems, ac.getValue());
+        if (needBatchFireSelectItems.length > 0 || needBatchFireDeSelectItems.length > 0)
+          ac.fireOnChange(oldSelectedItems, ac.getValue());
+
+        // 由下拉菜单自动联动删除的badge不触发badge删除事件
+
         stopEvent(e);
       })
       .on('mousedown', '.selall-btn', function (e) {
+        var needBatchFireSelectItems = [];
+        var oldSelectedItems = ac.selectedItems.slice();
+
         panel.el.children('.' + CLS.dropdownItem).each(function (i, itemEl) {
           var $itemEl = $(itemEl);
           var item = $itemEl.data('bsAutoCompleteItem');
           if (!item) return;
 
           var badgeEl = ac.isSelected(item) && ac.badge.findSelectedBadgeEl(item);
-          if (!badgeEl) ac.badge.addBadge(item, {itemEl: $itemEl});
+          if (!badgeEl) {
+            ac.badge.addBadge(item, {
+              itemEl            : $itemEl,
+              needFireOnSelect  : false,
+              needFireOnChange  : false,
+              innerOnAddSelected: function (item) {
+                needBatchFireSelectItems.push(item);
+              }
+            });
+          }
         });
+
+        if (needBatchFireSelectItems.length > 0) {
+          ac.fireOnSelect(needBatchFireSelectItems, ac.getValue());
+          ac.fireOnChange(oldSelectedItems, ac.getValue());
+        }
+
         stopEvent(e);
       });
 
@@ -882,7 +948,11 @@
 
           if (ac.selectedItems.length <= 0) ac.input.blur();
           ac.placeholder.refresh();
-          ac.fireBadgeRemoved();
+          // 由下拉菜单自动联动删除的badge不触发badge删除事件
+          /*ac.fireBadgeRemoved({
+            item   : item,
+            badgeEl: badgeEl
+          });*/
 
           doAdd = false;
         }
@@ -1341,8 +1411,11 @@
     };
 
     // fireBadgeRemoved
-    ac.fireBadgeRemoved = function () {
-      ac.params.el.trigger('bs.autocomplete.badge.removed');
+    ac.fireBadgeRemoved = function (opts) {
+      opts = opts || {};
+      if (opts.innerFireBadgeRemoved) opts.innerFireBadgeRemoved();
+      if (opts.needFireBadgeRemoved !== false)
+        ac.params.el.trigger('bs.autocomplete.badge.removed', [opts.item, opts.badgeEl]);
     };
 
     // fireOnBlur
@@ -1454,9 +1527,10 @@
 
       if (ac.selectedItemsInfo) ac.selectedItemsInfo.refreshItems();
 
+      if (opts.innerOnAddSelected) opts.innerOnAddSelected(item, oldSelectedItems, ac.getValue());
       if (opts.fire !== false) {
-        ac.fireOnSelect(item, ac.getValue());
-        ac.fireOnChange(oldSelectedItems, ac.getValue());
+        if (opts.needFireOnSelect !== false) ac.fireOnSelect(item, ac.getValue());
+        if (opts.needFireOnChange !== false) ac.fireOnChange(oldSelectedItems, ac.getValue());
       }
     };
 
@@ -1466,7 +1540,9 @@
     };
 
     // removeSelected
-    ac.removeSelected = function (item) {
+    ac.removeSelected = function (item, opts) {
+      opts = opts || {};
+
       var findIndex = ac.findSelectedItem(item);
       if (findIndex >= 0) {
         var oldSelectedItems = ac.selectedItems.slice();
@@ -1476,8 +1552,11 @@
 
         if (ac.selectedItemsInfo) ac.selectedItemsInfo.refreshItems();
 
-        ac.fireOnDeSelect(item, ac.getValue());
-        ac.fireOnChange(oldSelectedItems, ac.getValue());
+        if (opts.innerOnRemoveSelected) opts.innerOnRemoveSelected(item, oldSelectedItems, ac.getValue());
+        if (opts.fire !== false) {
+          if (opts.needFireOnDeSelect !== false) ac.fireOnDeSelect(item, ac.getValue());
+          if (opts.needFireOnChange !== false) ac.fireOnChange(oldSelectedItems, ac.getValue());
+        }
       }
     };
 
