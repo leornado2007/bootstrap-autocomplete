@@ -179,6 +179,39 @@
   var Badge = function (ac) {
     var badge = this;
 
+    // 从父元素一次性注册事件，提高性能
+    $(ac.el)
+      .on('click', '.' + CLS.badgeCt, function (e) {
+        stopEvent(e);
+      })
+
+      // close handler
+      .on('click', '.badge-close', function (e) {
+        var badgeEl = $(e.currentTarget).closest('.' + CLS.badgeCt);
+        badge.closeBadge(badgeEl, {closePanel: !ac.isSelectOptionMode()});
+        stopEvent(e);
+      })
+
+      // text handler
+      .on(ac.params.dblclick4Edit ? 'dblclick' : 'click', '.badge-text', function (e) {
+          if (ac.isReadonly()) return;
+
+          var badgeEl = $(e.currentTarget).closest('.' + CLS.badgeCt);
+          var item = badgeEl.data('bsAutoCompleteItem');
+          if (!item) return;
+
+          badgeEl.after(ac.input.el).remove();
+          ac.removeSelected(item);
+
+          var text = ac.isInSearchMode('name') ? item.n || item.name : item.c || item.code;
+          if (ac.params.getText4BadgeEdit) text = ac.params.getText4BadgeEdit.call(ac, item, text);
+          ac.editingItem = {item: item, text: text};
+          ac.close();
+          ac.input.updateTextValue(text);
+          stopEvent(e);
+        }
+      );
+
     // resize
     badge.resize = function (el) {
       if (el) {
@@ -256,9 +289,9 @@
       if (badges.size() > 0) return $(badges[badges.size() - 1]);
     };
 
-    // getCloestBadge
-    badge.getCloestBadge = function (mouseX, mouseY) {
-      var cloestBadgeEl, isLineMatched;
+    // getClosestBadge
+    badge.getClosestBadge = function (mouseX, mouseY) {
+      var closestBadgeEl, isLineMatched;
       ac.el.children('.' + CLS.badgeCt).each(function () {
         var badgeEl = $(this), pos = badgeEl.position();
         var left = pos.left, top = pos.top, bottom = top + badgeEl.outerHeight(),
@@ -266,15 +299,15 @@
         if (mouseY >= top && mouseY <= bottom) {
           isLineMatched = true;
           if (mouseX <= left) {
-            cloestBadgeEl = badgeEl;
+            closestBadgeEl = badgeEl;
             return false;
           }
         } else if (isLineMatched) {// matched last line last badge
-          cloestBadgeEl = badgeEl;
+          closestBadgeEl = badgeEl;
           return false;
         }
       });
-      return cloestBadgeEl;
+      return closestBadgeEl;
     };
 
     // addBadge
@@ -283,11 +316,11 @@
       var speicalData = opts.speicalData;
       var item;
 
-      // if (!isString(val) && item && item !== val) {
-      //   var valCode = val.c || val.code, valName = val.n || val.name;
-      //   var itemCode = item.c || item.code, itemName = item.n || item.name;
-      //   if (valCode !== itemCode || valName !== itemName) item = val;
-      // }
+      /*if (!isString(val) && item && item !== val) {
+        var valCode = val.c || val.code, valName = val.n || val.name;
+        var itemCode = item.c || item.code, itemName = item.n || item.name;
+        if (valCode !== itemCode || valName !== itemName) item = val;
+      }*/
 
       if (!val) {
         delete ac.editingItem;
@@ -337,31 +370,7 @@
 
       badgeEl
         .data('bsAutoCompleteItem', item)
-        .addClass(CLS.badgeCt + ' ' + ac.params.badgeCls)
-        .click(function (e) {
-          stopEvent(e);
-        });
-
-      // close handler
-      badgeEl.find('.badge-close').click(function (e) {
-        badge.closeBadge(badgeEl, {closePanel: !ac.isSelectOptionMode()});
-        stopEvent(e);
-      });
-
-      // text handler
-      badgeEl.find('.badge-text')[ac.params.dblclick4Edit ? 'dblclick' : 'click'](function (e) {
-        if (ac.isReadonly()) return;
-
-        badgeEl.after(ac.input.el).remove();
-        ac.removeSelected(item);
-
-        var text = ac.isInSearchMode('name') ? item.n || item.name : item.c || item.code;
-        if (ac.params.getText4BadgeEdit) text = ac.params.getText4BadgeEdit.call(ac, item, text);
-        ac.editingItem = {item: item, text: text};
-        ac.close();
-        ac.input.updateTextValue(text);
-        stopEvent(e);
-      });
+        .addClass(CLS.badgeCt + ' ' + ac.params.badgeCls);
 
       var doAdd = false;
       if (ac.params.filtSame && ac.selectedItems.length > 0 && !ac.isSingleMode()) {
@@ -798,7 +807,7 @@
       $(ac.params.tpls.clearBtnTpl)
         .addClass(CLS.inputClearBtnClass)
         .appendTo(inputCt)
-        .mousedown(function (e) {
+        .on('mousedown', function (e) {
           if (ac.isReadonly()) return;
 
           ac.input.clear(false);
@@ -810,10 +819,91 @@
     }
   };
 
+  // DropdownPanelMenubar
+  var DropdownPanelMenubar = function (ac, panel) {
+    var menuBar = this;
+    var menuBarEl = menuBar.el = $(ac.params.tpls.dropdownTopBarTpl);
+
+    $(panel.el)
+      .on('mousedown', '.selrev-btn', function (e) {
+        panel.el.children('.' + CLS.dropdownItem).each(function (i, itemEl) {
+          var $itemEl = $(itemEl);
+          var item = $itemEl.data('bsAutoCompleteItem');
+          if (!item) return;
+
+          var badgeEl = ac.isSelected(item) && ac.badge.findSelectedBadgeEl(item);
+          if (!!badgeEl) ac.badge.closeBadge(badgeEl, {closePanel: !ac.isSelectOptionMode(), itemEl: $itemEl});
+          else ac.badge.addBadge(item, {itemEl: $itemEl});
+        });
+        stopEvent(e);
+      })
+      .on('mousedown', '.selall-btn', function (e) {
+        panel.el.children('.' + CLS.dropdownItem).each(function (i, itemEl) {
+          var $itemEl = $(itemEl);
+          var item = $itemEl.data('bsAutoCompleteItem');
+          if (!item) return;
+
+          var badgeEl = ac.isSelected(item) && ac.badge.findSelectedBadgeEl(item);
+          if (!badgeEl) ac.badge.addBadge(item, {itemEl: $itemEl});
+        });
+        stopEvent(e);
+      });
+
+    menuBarEl.find('.selrev-btn').text(ac.params.revselectBtnTxt);
+    menuBarEl.find('.selall-btn').text(ac.params.selectAllBtnTxt);
+  };
+
   // DropdownPanel
   var DropdownPanel = function (ac) {
     var panel = this, panelEl = panel.el = $(ac.params.tpls.dropdownTpl).appendTo(ac.el);
     var emptyItemEl = $(ac.params.tpls.emptyDropDownItemTpl).text(ac.params.emptyListTip);
+
+    // 从父元素一次性注册事件，提高性能
+    $(panel.el).on('mousedown', '.' + CLS.dropdownItem, function (e) {
+      if (ac.isReadonly()) return;
+
+      var itemEl = $(e.currentTarget);
+      var item = itemEl.data('bsAutoCompleteItem');
+      if (!item) return;
+
+      if (item.optGroup) {
+        stopEvent(e);
+        return;
+      }
+
+      var doAdd = true;
+      if (!ac.isSelectOptionMode()) {
+        if (isIE) ac.input.blur();
+        ac.input.clear();
+      } else {
+        if (ac.editingItem && ac.editingItem.item === item) {
+          delete ac.editingItem;
+          ac.removeSelected(item);
+
+          if (ac.selectedItems.length <= 0) ac.input.blur();
+          ac.placeholder.refresh();
+          ac.fireBadgeRemoved();
+
+          doAdd = false;
+        }
+
+        var badgeEl = ac.badge.findSelectedBadgeEl(item);
+        if (!!badgeEl) {
+          ac.badge.closeBadge(badgeEl, {closePanel: false, itemEl: itemEl});
+          doAdd = false;
+        }
+      }
+
+      if (doAdd) ac.badge.addBadge(item, {itemEl: itemEl});
+
+      stopEvent(e);
+    });
+
+    // TODO
+    var menuBar;
+    if (ac.isSelectOptionMode()) {
+      menuBar = new DropdownPanelMenubar(ac, panel);
+    }
 
     panelEl.on('mousewheel', function (e) {
       if (e.currentTarget !== panelEl[0]) return;
@@ -901,35 +991,6 @@
       return panelEl.children('li.' + CLS.dropdownItem + '.' + CLS.itemSelected);
     };
 
-    // initMenuBar
-    panel.initMenuBar = function () {
-      var menuBarEl = $(ac.params.tpls.dropdownTopBarTpl);
-      menuBarEl.find('.selrev-btn').text(ac.params.revselectBtnTxt).mousedown(function (e) {
-        panelEl.children('.' + CLS.dropdownItem).each(function (i, itemEl) {
-          var $itemEl = $(itemEl);
-          var item = $itemEl.data('bsAutoCompleteItem');
-          if (!item) return;
-
-          var badgeEl = ac.isSelected(item) && ac.badge.findSelectedBadgeEl(item);
-          if (!!badgeEl) ac.badge.closeBadge(badgeEl, {closePanel: !ac.isSelectOptionMode(), itemEl: $itemEl});
-          else ac.badge.addBadge(item, {itemEl: $itemEl});
-        });
-        stopEvent(e);
-      });
-      menuBarEl.find('.selall-btn').text(ac.params.selectAllBtnTxt).mousedown(function (e) {
-        panelEl.children('.' + CLS.dropdownItem).each(function (i, itemEl) {
-          var $itemEl = $(itemEl);
-          var item = $itemEl.data('bsAutoCompleteItem');
-          if (!item) return;
-
-          var badgeEl = ac.isSelected(item) && ac.badge.findSelectedBadgeEl(item);
-          if (!badgeEl) ac.badge.addBadge(item, {itemEl: $itemEl});
-        });
-        stopEvent(e);
-      });
-      return menuBarEl;
-    };
-
     // render
     panel.render = function () {
       var data = ac.data || [], searchText = ac.input.getSearchText();
@@ -944,9 +1005,8 @@
 
         panelEl.removeClass(CLS.emptyList);
         if (ac.isSelectOptionMode()) {
-          var menuBarEl = panel.initMenuBar();
+          panelEl.append(menuBar.el);
           ac.el.addClass(CLS.modePrefix + MODE.selectOption.toLowerCase());
-          panelEl.append(menuBarEl);
         } else {
           ac.el.removeClass(CLS.modePrefix + MODE.selectOption.toLowerCase());
         }
@@ -1004,41 +1064,7 @@
           itemEl
             .appendTo(panelEl)
             .data('bsAutoCompleteItem', item)
-            .attr('title', itemName)
-            .mousedown(function (e) {
-              if (ac.isReadonly()) return;
-              if (item.optGroup) {
-                stopEvent(e);
-                return;
-              }
-
-              var doAdd = true;
-              if (!ac.isSelectOptionMode()) {
-                if (isIE) ac.input.blur();
-                ac.input.clear();
-              } else {
-                if (ac.editingItem && ac.editingItem.item === item) {
-                  delete ac.editingItem;
-                  ac.removeSelected(item);
-
-                  if (ac.selectedItems.length <= 0) ac.input.blur();
-                  ac.placeholder.refresh();
-                  ac.fireBadgeRemoved();
-
-                  doAdd = false;
-                }
-
-                var badgeEl = ac.badge.findSelectedBadgeEl(item);
-                if (!!badgeEl) {
-                  ac.badge.closeBadge(badgeEl, {closePanel: false, itemEl: itemEl});
-                  doAdd = false;
-                }
-              }
-
-              if (doAdd) ac.badge.addBadge(item, {itemEl: itemEl});
-
-              stopEvent(e);
-            });
+            .attr('title', itemName);
 
           if (!matched && searchText) {
             if (ac.editingItem && ac.editingItem.text == searchText) {
@@ -1614,7 +1640,7 @@
     { // clear btn
       $(ac.params.tpls.clearBtnTpl)[ac.isHideBadge() ? 'prependTo' : 'appendTo'](ac.el)
         .addClass(CLS.clearBtnClass)
-        .click(function (e) {
+        .on('click', function (e) {
           if (ac.isReadonly()) return;
 
           ac.clearValue();
@@ -1629,7 +1655,7 @@
         if (ac.isReadonly()) return;
 
         if (e.target == ac.el[0]) {
-          var badge = ac.badge.getCloestBadge(e.offsetX, e.offsetY);
+          var badge = ac.badge.getClosestBadge(e.offsetX, e.offsetY);
           ac.input.moveToBadge(badge);
           if (ac.input.isFocused) stopEvent(e);
           //ac.input.focus();
